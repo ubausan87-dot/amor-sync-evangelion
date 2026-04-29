@@ -3,260 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAGI SYSTEM: AMOR_SYNC_02</title>
+    <title>MAGI_OS_v2.0.4</title>
     <style>
-        :root {
-            --nerv-red: #ff0000;
-            --nerv-dark: #1a0000;
-            --nerv-bg: #000000;
+        :root { --red: #ff0000; --dark: #0a0000; --glow: #ff0000; }
+        body { background: #000; color: var(--red); font-family: 'Courier New', monospace; margin: 0; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        
+        /* Efecto de Interferencia de Fondo */
+        body::before {
+            content: " "; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 1000;
         }
 
-        body {
-            background-color: var(--nerv-bg);
-            color: var(--nerv-red);
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
+        #ui-wrapper { border: 2px solid var(--red); padding: 20px; background: rgba(10,0,0,0.9); box-shadow: 0 0 20px rgba(255,0,0,0.2); width: 90%; max-width: 500px; position: relative; }
+        
+        /* Terminal de Logs Inferior */
+        #console-log {
+            height: 60px; background: #000; border: 1px solid #300; margin-top: 15px;
+            font-size: 0.6rem; padding: 5px; overflow: hidden; color: #800;
         }
 
-        /* --- FASE 1: LOGIN --- */
-        #login-screen {
-            text-align: center;
-            border: 2px solid var(--nerv-red);
-            padding: 40px;
-            box-shadow: 0 0 20px var(--nerv-red);
-            background: var(--nerv-dark);
-            z-index: 100;
+        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 10px; width: 80%; text-align: center; margin: 10px 0; }
+        button { background: var(--red); color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 10px; }
+        
+        /* Hexágonos Dinámicos */
+        .magi-hex {
+            display: none; border: 2px solid var(--red); margin: 10px 0; padding: 15px;
+            clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);
+            background: rgba(40,0,0,0.3); opacity: 0; transform: translateY(10px); transition: 0.5s all;
         }
+        .magi-hex.show { opacity: 1; transform: translateY(0); }
 
-        input {
-            background: #000;
-            border: 1px solid var(--nerv-red);
-            color: var(--nerv-red);
-            padding: 10px;
-            text-align: center;
-            font-size: 1.2rem;
-            margin-top: 10px;
-            width: 80%;
-            text-transform: uppercase;
-        }
-
-        button {
-            background: var(--nerv-red);
-            color: #000;
-            border: none;
-            padding: 12px 25px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-
-        button:hover { background: #fff; box-shadow: 0 0 15px #fff; }
-
-        /* --- ESCÁNER --- */
-        #scanner {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            background: var(--nerv-red);
-            box-shadow: 0 0 25px var(--nerv-red);
-            z-index: 200;
-        }
-
-        /* --- FASE 2: PANEL DE CONTROL --- */
-        #main-panel {
-            display: none;
-            width: 90%;
-            max-width: 600px;
-            padding: 20px;
-            animation: fadeIn 0.8s ease-in;
-        }
-
-        .stat-box {
-            border: 1px solid var(--nerv-red);
-            padding: 15px;
-            margin-bottom: 20px;
-            background: rgba(255, 0, 0, 0.05);
-        }
-
-        .bar-container {
-            width: 100%;
-            height: 15px;
-            border: 1px solid var(--nerv-red);
-            margin-top: 5px;
-        }
-
-        .bar-fill {
-            height: 100%;
-            background: var(--nerv-red);
-            box-shadow: 0 0 10px var(--nerv-red);
-        }
-
-        /* --- FASE 3: MAGI DYNAMICA --- */
-        #magi-verdict {
-            display: none;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .hexagon {
-            background: var(--nerv-dark);
-            border: 2px solid var(--nerv-red);
-            padding: 15px;
-            text-align: center;
-            clip-path: polygon(5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
-            opacity: 0;
-            transform: scale(0.8);
-            transition: 0.5s all;
-        }
-
-        .hexagon.active { opacity: 1; transform: scale(1); }
-        .status-pass { color: #00ff00; font-weight: bold; }
-
-        #logout-btn {
-            background: #444;
-            color: #fff;
-            font-size: 0.7rem;
-            margin-top: 30px;
-            width: 100%;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .glitch { animation: glitch 2s infinite; }
+        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.8; } 51% { opacity: 0.5; } 52% { opacity: 1; } }
+        
+        .bar-bg { width: 100%; height: 10px; border: 1px solid var(--red); margin: 5px 0; }
+        .bar-load { height: 100%; background: var(--red); transition: width 1s; }
+        
+        #logout { font-size: 0.6rem; color: #400; text-decoration: underline; cursor: pointer; margin-top: 15px; display: block; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <h2>MAGI SYSTEM</h2>
-        <p style="font-size: 0.8rem; letter-spacing: 2px;">NIVEL DE SEGURIDAD: ALTO</p>
-        <input type="text" id="pass" placeholder="PASSWORD">
-        <button onclick="startSync()">CONECTAR</button>
-        <p style="font-size: 0.6rem; margin-top: 15px; color: #660000;">HINT: ID Piloto + Fecha [DDMMAA]</p>
-    </div>
-
-    <div id="scanner"></div>
-
-    <div id="main-panel">
-        <h3 style="text-align: center; font-size: 1rem; border-bottom: 1px solid red; padding-bottom: 10px;">NERV MONITOR: ACTIVE</h3>
-        
-        <div class="stat-box">
-            <div style="font-size: 0.7rem; color: #880000;">UPTIME SINCRONIZACIÓN</div>
-            <div id="timer" style="font-size: 1.3rem; font-weight: bold; margin-top: 5px;"></div>
-        </div>
-
-        <div class="stat-box">
-            <div style="display: flex; justify-content: space-between; font-size: 0.7rem;">
-                <span>SYNC RATE</span>
-                <span>99.9%</span>
-            </div>
-            <div class="bar-container">
-                <div class="bar-fill" style="width: 99.9%;"></div>
+    <div id="ui-wrapper">
+        <div id="login-zone">
+            <h2 class="glitch" style="text-align: center; margin: 0;">MAGI SYSTEM</h2>
+            <p style="font-size: 0.7rem; text-align: center;">AUTENTICACIÓN REQUERIDA (ALAMO_NODE)</p>
+            <div style="text-align: center;">
+                <input type="text" id="pass" placeholder="USER_TOKEN">
+                <button onclick="access()">AUTH_EXE</button>
             </div>
         </div>
 
-        <button id="btn-magi" onclick="runMagiSequence()" style="width: 100%; border: 1px solid red; background: transparent; color: red;">CONSULTAR MAGI</button>
+        <div id="core-zone" style="display: none;">
+            <h3 style="margin: 0; font-size: 0.9rem;">SYNC_STATUS: <span id="cpu-load">99.9</span>%</h3>
+            <div class="bar-bg"><div class="bar-load" id="sync-bar" style="width: 0%;"></div></div>
+            
+            <div id="timer" style="font-size: 1.2rem; font-weight: bold; text-align: center; margin: 15px 0; border: 1px solid #300; padding: 5px;"></div>
+            
+            <button id="query-btn" onclick="runMagi()">CONSULTAR MATRIZ MAGI</button>
+            
+            <div id="magi-display">
+                <div class="magi-hex" id="m1"><b>MELCHIOR-1:</b> Lógica impecable. Venus detectada como prioridad.</div>
+                <div class="magi-hex" id="m2"><b>BALTHASAR-2:</b> Instinto estable. Protección de núcleo activada.</div>
+                <div class="magi-hex" id="m3"><b>CASPER-3:</b> Humano: Te amo, Venus. Eres mi mundo.</div>
+            </div>
 
-        <div id="magi-verdict">
-            <div class="hexagon" id="m1">
-                <div class="status-pass">PASS</div>
-                <div style="font-size: 0.8rem; font-weight: bold;">MELCHIOR-1</div>
-                <p style="font-size: 0.65rem;">Lógica: No hay error. Venus es el núcleo.</p>
-            </div>
-            <div class="hexagon" id="m2">
-                <div class="status-pass">PASS</div>
-                <div style="font-size: 0.8rem; font-weight: bold;">BALTHASAR-2</div>
-                <p style="font-size: 0.65rem;">Instinto: Prioridad absoluta su felicidad.</p>
-            </div>
-            <div class="hexagon" id="m3">
-                <div class="status-pass">PASS</div>
-                <div style="font-size: 0.8rem; font-weight: bold;">CASPER-3</div>
-                <p style="font-size: 0.65rem;">Humano: Eres mi persona favorita. Te amo.</p>
-            </div>
-            <button id="logout-btn" onclick="logout()">TERMINAR SESIÓN / CERRAR NÚCLEO</button>
+            <span id="logout" onclick="location.reload()">TERMINAR_CONEXIÓN_</span>
+        </div>
+
+        <div id="console-log">
+            <div id="log-content">> Esperando autorización...</div>
         </div>
     </div>
 
     <script>
-        let timerInterval;
+        const logs = [
+            "Iniciando protocolos NERV...",
+            "Cargando kernel de sincronización...",
+            "Conectando con nodo Álamo, Veracruz...",
+            "Escaneando firmas de ADN...",
+            "Analizando patrón de comportamiento...",
+            "Sincronizando con servidor GitHub...",
+            "Estableciendo enlace neural..."
+        ];
 
-        function startSync() {
-            const pass = document.getElementById('pass').value.toUpperCase();
-            if(pass === "V3NU5-071025") {
-                document.getElementById('login-screen').style.display = 'none';
-                const scn = document.getElementById('scanner');
-                scn.style.display = 'block';
-                
-                let pos = 0;
-                let interval = setInterval(() => {
-                    if(pos >= window.innerHeight) {
-                        clearInterval(interval);
-                        scn.style.display = 'none';
-                        initPanel();
-                    } else {
-                        pos += 15;
-                        scn.style.top = pos + 'px';
-                    }
-                }, 10);
-            } else {
-                alert("ERROR: ACCESO DENEGADO");
+        let logIdx = 0;
+        function updateLogs() {
+            const container = document.getElementById('log-content');
+            container.innerHTML += `<br>> ${logs[logIdx % logs.length]}`;
+            logIdx++;
+            if(container.innerHTML.split('<br>').length > 4) {
+                container.innerHTML = container.innerHTML.split('<br>').slice(1).join('<br>');
             }
         }
+        setInterval(updateLogs, 2500);
 
-        function initPanel() {
-            document.getElementById('main-panel').style.display = 'block';
-            startTimer();
+        function access() {
+            const p = document.getElementById('pass').value.toUpperCase();
+            if(p === "V3NU5-071025") {
+                document.getElementById('login-zone').style.display = 'none';
+                document.getElementById('core-zone').style.display = 'block';
+                document.getElementById('log-content').innerHTML = "> ACCESO CONCEDIDO.<br>> BIENVENIDA VENUS.";
+                setTimeout(() => { document.getElementById('sync-bar').style.width = "99.9%"; }, 100);
+                startTimer();
+            } else {
+                alert("ERROR: TOKEN INVÁLIDO");
+            }
         }
 
         function startTimer() {
             const start = new Date('2025-10-07T00:00:00').getTime();
-            timerInterval = setInterval(() => {
+            setInterval(() => {
                 const now = new Date().getTime();
                 const diff = now - start;
                 const d = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((diff % (1000 * 60)) / 1000);
-                document.getElementById('timer').innerHTML = `${d}D ${h}H ${m}M ${s}S`;
+                document.getElementById('timer').innerHTML = `${d}D:${h}H:${m}M:${s}S`;
+                // Efecto de CPU variando
+                document.getElementById('cpu-load').innerText = (99.9 + Math.random() * 0.05).toFixed(2);
             }, 1000);
         }
 
-        // FASE 3 DINÁMICA
-        function runMagiSequence() {
-            document.getElementById('btn-magi').innerText = "PROCESANDO MATRIZ...";
-            document.getElementById('btn-magi').disabled = true;
-            document.getElementById('magi-verdict').style.display = 'grid';
-
-            setTimeout(() => { document.getElementById('m1').classList.add('active'); }, 800);
-            setTimeout(() => { document.getElementById('m2').classList.add('active'); }, 1800);
-            setTimeout(() => { 
-                document.getElementById('m3').classList.add('active');
-                document.getElementById('btn-magi').style.display = 'none';
-            }, 2800);
-        }
-
-        function logout() {
-            clearInterval(timerInterval);
-            document.getElementById('main-panel').style.display = 'none';
-            document.getElementById('magi-verdict').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'block';
-            document.getElementById('btn-magi').style.display = 'block';
-            document.getElementById('btn-magi').disabled = false;
-            document.getElementById('btn-magi').innerText = "CONSULTAR MAGI";
-            document.getElementById('m1').classList.remove('active');
-            document.getElementById('m2').classList.remove('active');
-            document.getElementById('m3').classList.remove('active');
-            document.getElementById('pass').value = "";
+        function runMagi() {
+            const btn = document.getElementById('query-btn');
+            btn.innerText = "PROCESANDO MATRIZ...";
+            btn.disabled = true;
+            
+            const m = ['m1', 'm2', 'm3'];
+            m.forEach((id, i) => {
+                setTimeout(() => {
+                    const el = document.getElementById(id);
+                    el.style.display = 'block';
+                    setTimeout(() => el.classList.add('show'), 50);
+                    document.getElementById('log-content').innerHTML += `<br>> MAGI_${id.toUpperCase()}_OK`;
+                }, (i + 1) * 1200);
+            });
         }
     </script>
 </body>
