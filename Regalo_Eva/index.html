@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGI: AMOR_SYNC_02</title>
+    <style>
+        :root { --color-nerv: #ff3c3c; --bg-color: #000; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--color-nerv);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            border: 2px solid var(--color-nerv);
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(255, 60, 60, 0.3);
+            background: rgba(10, 0, 0, 0.9);
+        }
+        h1 { font-size: 1.1rem; text-align: center; border-bottom: 1px solid var(--color-nerv); padding-bottom: 10px; }
+        input {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--color-nerv);
+            color: var(--color-nerv);
+            padding: 10px;
+            margin: 15px 0;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            background: var(--color-nerv);
+            color: black;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        button:hover { background: #b32a2a; }
+        .menu-btn {
+            background: transparent;
+            color: var(--color-nerv);
+            border: 1px solid var(--color-nerv);
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .content-box {
+            display: none;
+            margin-top: 20px;
+            border-top: 1px solid var(--color-nerv);
+            padding-top: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .glitch { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container" id="login-screen">
+    <h1 class="glitch">SISTEMA MAGI: AMOR_SYNC_02</h1>
+    <p style="text-align: center;">ESTADO: BLOQUEADO</p>
+    <p style="font-size: 0.8rem; text-align: center;">Pista: Fecha de conocernos (DDMMAY)</p>
+    <input type="password" id="pass" placeholder="INTRODUCE CLAVE">
+    <button onclick="checkPass()">Acceder al Sistema</button>
+</div>
+
+<div class="container" id="main-screen" style="display:none;">
+    <h1>DIRECTORIO DE ARCHIVOS DESBLOQUEADOS</h1>
+    <button class="menu-btn" onclick="showContent('log')">1. [LOG] Protocolo_Sincronizacion.log</button>
+    <button class="menu-btn" onclick="showContent('mem')">2. [MEM] Registro_07_Octubre.dat</button>
+    <button class="menu-btn" onclick="window.open('https://open.spotify.com/playlist/4OVZJpZ33cR0RFsFV039kr?si=iYo8pp0gR5S3zOMbC719_w&pt=89635b65470db73e2cf41fd9129b1ac7&pi=BKTsquFbTRKZi')">3. [SND] Audio_Frecuencia.mp3</button>
+    <button class="menu-btn" onclick="showContent('exe')">4. [EXE] Lo_Que_Aun_No_Llega.exe</button>
+    
+    <div id="display" class="content-box"></div>
+    
+    <button onclick="location.reload()" style="margin-top:20px; background: #333; color: white;">Cerrar Sesión</button>
+</div>
+
+<script>
+    const textos = {
+        log: "// INICIO DE REGISTRO\nNivel de sincronización: 100%.\n\nEres esa parte de mi sistema que no sabía que necesitaba, pero que ahora mantiene todo funcionando. La razón de mi día a día y de mi esfuerzo.",
+        mem: "// REGISTRO DE MEMORIA\nCuando nos conocimos, no sabía que te amaría como hoy te amo.\n\nSin entenderlo del todo, ya había algo en mí que sabía la verdad: que aprendería a necesitarte.",
+        exe: "// FUTURO EJECUTABLE\nNo quiero quedarme en lo que somos hoy, quiero descubrir todo lo que aún podemos llegar a ser.\n\nQuiero un mañana donde sigamos eligiéndonos."
+    };
+
+    function checkPass() {
+        if(document.getElementById('pass').value === "071025") {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-screen').style.display = 'block';
+        } else {
+            alert("ERROR: SINCRONIZACIÓN FALLIDA");
+        }
+    }
+
+    function showContent(key) {
+        const div = document.getElementById('display');
+        div.style.display = 'block';
+        div.innerText = textos[key];
+    }
+</script>
+
+</body>
+</html>
