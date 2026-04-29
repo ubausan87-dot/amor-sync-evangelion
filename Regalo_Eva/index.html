@@ -3,113 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAGI: AMOR_SYNC_02</title>
+    <title>MAGI SYSTEM: AMOR_SYNC_02</title>
     <style>
-        :root { --color-nerv: #ff3c3c; --bg-color: #000; }
+        :root {
+            --nerv-red: #ff0000;
+            --nerv-dark: #1a0000;
+            --nerv-bg: #000000;
+        }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--color-nerv);
+            background-color: var(--nerv-bg);
+            color: var(--nerv-red);
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
-        .container {
-            border: 2px solid var(--color-nerv);
-            padding: 25px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 0 20px rgba(255, 60, 60, 0.3);
-            background: rgba(10, 0, 0, 0.9);
-        }
-        h1 { font-size: 1.1rem; text-align: center; border-bottom: 1px solid var(--color-nerv); padding-bottom: 10px; }
-        input {
-            width: 100%;
-            background: transparent;
-            border: 1px solid var(--color-nerv);
-            color: var(--color-nerv);
-            padding: 10px;
-            margin: 15px 0;
+
+        /* --- FASE 1: LOGIN --- */
+        #login-screen {
             text-align: center;
-            box-sizing: border-box;
+            border: 2px solid var(--nerv-red);
+            padding: 40px;
+            box-shadow: 0 0 20px var(--nerv-red);
+            background: var(--nerv-dark);
+            z-index: 100;
         }
+
+        input {
+            background: #000;
+            border: 1px solid var(--nerv-red);
+            color: var(--nerv-red);
+            padding: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 10px;
+            width: 80%;
+        }
+
         button {
-            width: 100%;
-            background: var(--color-nerv);
-            color: black;
+            background: var(--nerv-red);
+            color: #000;
             border: none;
-            padding: 12px;
-            font-weight: bold;
+            padding: 12px 25px;
+            margin-top: 20px;
             cursor: pointer;
+            font-weight: bold;
             text-transform: uppercase;
         }
-        button:hover { background: #b32a2a; }
-        .menu-btn {
-            background: transparent;
-            color: var(--color-nerv);
-            border: 1px solid var(--color-nerv);
-            margin-bottom: 10px;
-            text-align: left;
-        }
-        .content-box {
+
+        /* --- ESCÁNER --- */
+        #scanner {
             display: none;
-            margin-top: 20px;
-            border-top: 1px solid var(--color-nerv);
-            padding-top: 15px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            white-space: pre-wrap;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: var(--nerv-red);
+            box-shadow: 0 0 25px var(--nerv-red);
+            z-index: 200;
         }
-        .glitch { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* --- FASE 2: PANEL DE CONTROL --- */
+        #main-panel {
+            display: none;
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .stat-box {
+            border: 1px solid var(--nerv-red);
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(255, 0, 0, 0.05);
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 20px;
+            border: 1px solid var(--nerv-red);
+            margin-top: 5px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--nerv-red);
+            box-shadow: 0 0 10px var(--nerv-red);
+        }
+
+        /* --- FASE 3: MAGI VERDICT --- */
+        #magi-verdict {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .hexagon {
+            background: var(--nerv-dark);
+            border: 2px solid var(--nerv-red);
+            padding: 15px;
+            text-align: center;
+            clip-path: polygon(5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
+        }
+
+        .status-pass { color: #00ff00; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="container" id="login-screen">
-    <h1 class="glitch">SISTEMA MAGI: AMOR_SYNC_02</h1>
-    <p style="text-align: center;">ESTADO: BLOQUEADO</p>
-    <p style="font-size: 0.8rem; text-align: center;">Pista: Fecha de conocernos (DDMMAY)</p>
-    <input type="password" id="pass" placeholder="INTRODUCE CLAVE">
-    <button onclick="checkPass()">Acceder al Sistema</button>
-</div>
+    <div id="login-screen">
+        <h2>SISTEMA MAGI</h2>
+        <p>IDENTIFICACIÓN REQUERIDA</p>
+        <input type="text" id="pass" placeholder="CÓDIGO DE ACCESO">
+        <button onclick="startSync()">ACCEDER</button>
+        <p style="font-size: 0.7rem; margin-top: 15px; opacity: 0.6;">PISTA: ID Piloto + Fecha Sincro [DDMMAA]</p>
+    </div>
 
-<div class="container" id="main-screen" style="display:none;">
-    <h1>DIRECTORIO DE ARCHIVOS DESBLOQUEADOS</h1>
-    <button class="menu-btn" onclick="showContent('log')">1. [LOG] Protocolo_Sincronizacion.log</button>
-    <button class="menu-btn" onclick="showContent('mem')">2. [MEM] Registro_07_Octubre.dat</button>
-    <button class="menu-btn" onclick="window.open('https://open.spotify.com/playlist/4OVZJpZ33cR0RFsFV039kr?si=iYo8pp0gR5S3zOMbC719_w&pt=89635b65470db73e2cf41fd9129b1ac7&pi=BKTsquFbTRKZi')">3. [SND] Audio_Frecuencia.mp3</button>
-    <button class="menu-btn" onclick="showContent('exe')">4. [EXE] Lo_Que_Aun_No_Llega.exe</button>
-    
-    <div id="display" class="content-box"></div>
-    
-    <button onclick="location.reload()" style="margin-top:20px; background: #333; color: white;">Cerrar Sesión</button>
-</div>
+    <div id="scanner"></div>
 
-<script>
-    const textos = {
-        log: "// INICIO DE REGISTRO\nNivel de sincronización: 100%.\n\nEres esa parte de mi sistema que no sabía que necesitaba, pero que ahora mantiene todo funcionando. La razón de mi día a día y de mi esfuerzo.",
-        mem: "// REGISTRO DE MEMORIA\nCuando nos conocimos, no sabía que te amaría como hoy te amo.\n\nSin entenderlo del todo, ya había algo en mí que sabía la verdad: que aprendería a necesitarte.",
-        exe: "// FUTURO EJECUTABLE\nNo quiero quedarme en lo que somos hoy, quiero descubrir todo lo que aún podemos llegar a ser.\n\nQuiero un mañana donde sigamos eligiéndonos."
-    };
+    <div id="main-panel">
+        <h3 style="text-align: center; letter-spacing: 3px;">MONITOR DE SINCRONIZACIÓN</h3>
+        
+        <div class="stat-box">
+            <div style="font-size: 0.8rem;">TIEMPO DE ACTIVIDAD (UPTIME)</div>
+            <div id="timer" style="font-size: 1.4rem; font-weight: bold; margin-top: 5px;"></div>
+        </div>
 
-    function checkPass() {
-        if(document.getElementById('pass').value === "071025") {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-screen').style.display = 'block';
-        } else {
-            alert("ERROR: SINCRONIZACIÓN FALLIDA");
+        <div class="stat-box">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                <span>TASA DE SINCRONIZACIÓN</span>
+                <span>99.9%</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill" style="width: 99.9%;"></div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                <span>CONEXIÓN NEURAL (VENUS)</span>
+                <span>ESTABLE</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill" style="width: 100%; animation: pulse 2s infinite;"></div>
+            </div>
+        </div>
+
+        <button id="btn-magi" onclick="showMagi()" style="width: 100%;">SOLICITAR VEREDICTO FINAL</button>
+
+        <div id="magi-verdict">
+            <div class="hexagon">
+                <div class="status-pass">APROBADO</div>
+                <div style="font-size: 0.8rem; font-weight: bold;">MELCHIOR-1</div>
+                <p style="font-size: 0.7rem;">Lógica: No hay escenario donde no seas el amor de mi vida.</p>
+            </div>
+            <div class="hexagon">
+                <div class="status-pass">APROBADO</div>
+                <div style="font-size: 0.8rem; font-weight: bold;">BALTHASAR-2</div>
+                <p style="font-size: 0.7rem;">Instinto: Prioridad absoluta proteger tu felicidad.</p>
+            </div>
+            <div class="hexagon">
+                <div class="status-pass">APROBADO</div>
+                <div style="font-size: 0.8rem; font-weight: bold;">CASPER-3</div>
+                <p style="font-size: 0.7rem;">Humano: Eres mi persona favorita, Venus. Te amo.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Acceso y Escaneo
+        function startSync() {
+            const pass = document.getElementById('pass').value.toUpperCase();
+            if(pass === "V3NU5-071025") {
+                document.getElementById('login-screen').style.display = 'none';
+                const scn = document.getElementById('scanner');
+                scn.style.display = 'block';
+                
+                let pos = 0;
+                let interval = setInterval(() => {
+                    if(pos >= window.innerHeight) {
+                        clearInterval(interval);
+                        scn.style.display = 'none';
+                        initPanel();
+                    } else {
+                        pos += 10;
+                        scn.style.top = pos + 'px';
+                    }
+                }, 10);
+            } else {
+                alert("ERROR: PATRÓN NO RECONOCIDO");
+            }
         }
-    }
 
-    function showContent(key) {
-        const div = document.getElementById('display');
-        div.style.display = 'block';
-        div.innerText = textos[key];
-    }
-</script>
+        // Iniciar Panel Fase 2
+        function initPanel() {
+            document.getElementById('main-panel').style.display = 'block';
+            startTimer();
+        }
 
+        // Contador de Tiempo
+        function startTimer() {
+            const start = new Date('2025-10-07T00:00:00').getTime();
+            setInterval(() => {
+                const now = new Date().getTime();
+                const diff = now - start;
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+                const ms = Math.floor((diff % 1000) / 10);
+                document.getElementById('timer').innerHTML = `${d}d ${h}h ${m}m ${s}s ${ms}ms`;
+            }, 50);
+        }
+
+        // Mostrar Fase 3
+        function showMagi() {
+            document.getElementById('btn-magi').style.display = 'none';
+            document.getElementById('magi-verdict').style.display = 'grid';
+        }
+    </script>
+
+    <style>
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+    </style>
 </body>
 </html>
