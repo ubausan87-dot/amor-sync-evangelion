@@ -21,189 +21,86 @@
             background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 1000;
         }
 
-        #viewport {
-            perspective: 1200px;
-            width: 100vw; height: 100vh;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        #world {
-            position: relative;
-            width: 100%; height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        #viewport { perspective: 1200px; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        #world { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
         .section {
-            position: absolute;
-            width: 100vw; height: 100vh;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            backface-visibility: hidden;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 1s;
+            position: absolute; width: 100vw; height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; backface-visibility: hidden; text-align: center;
+            opacity: 0; transition: opacity 0.8s;
         }
-
         .active { opacity: 1 !important; }
 
-        /* Estética de Cuadros NERV */
         .box {
-            border: 2px solid var(--red);
-            padding: 30px;
-            background: rgba(10,0,0,0.95);
-            box-shadow: 0 0 30px var(--glow);
-            max-width: 600px;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
+            border: 2px solid var(--red); padding: 30px; background: rgba(10,0,0,0.95);
+            box-shadow: 0 0 30px var(--glow); max-width: 600px; word-wrap: break-word;
         }
 
-        .slide-title {
-            font-size: 1.5rem;
-            border-left: 10px solid var(--red);
-            padding-left: 15px;
-            text-align: left;
-            margin-bottom: 20px;
-            letter-spacing: 3px;
-        }
+        .slide-title { font-size: 1.5rem; border-left: 10px solid var(--red); padding-left: 15px; text-align: left; margin-bottom: 20px; letter-spacing: 3px; }
+        .content-text { font-size: 1rem; line-height: 1.6; text-align: justify; color: #fff; margin-bottom: 20px; min-height: 50px; }
 
-        .content-text {
-            font-size: 1rem;
-            line-height: 1.6;
-            text-align: justify;
-            color: #fff;
-            margin-bottom: 20px;
-        }
+        /* Barra de carga */
+        .progress-container { width: 100%; background: #200; height: 30px; border: 1px solid var(--red); margin-top: 20px; position: relative; }
+        #sync-bar { width: 0%; height: 100%; background: var(--red); transition: width 3s cubic-bezier(0.1, 0, 0.3, 1); }
 
-        button { 
-            background: var(--red); color: #000; border: none; 
-            padding: 15px 30px; font-weight: bold; cursor: pointer; 
-            text-transform: uppercase; margin-top: 10px;
-        }
+        button { background: var(--red); color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 12px; margin: 15px 0; width: 80%; text-align: center; outline: none; }
 
-        input { 
-            background: #000; border: 1px solid var(--red); color: var(--red); 
-            padding: 12px; margin: 15px 0; width: 80%; text-align: center; outline: none; 
-        }
-
-        .warning-box {
-            display: none; border: 2px solid #fff; background: var(--red); 
-            color: #fff; padding: 20px; font-weight: bold; margin-top: 20px;
-            animation: pulse 0.4s infinite alternate;
-        }
-
+        .warning-box { display: none; border: 2px solid #fff; background: var(--red); color: #fff; padding: 20px; font-weight: bold; margin-top: 20px; animation: pulse 0.4s infinite alternate; }
         @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
-
-        #bg-grid {
-            position: fixed; top: 0; left: 0; width: 200%; height: 200%;
-            background-image: linear-gradient(var(--red) 1px, transparent 1px), linear-gradient(90deg, var(--red) 1px, transparent 1px);
-            background-size: 50px 50px; opacity: 0.05; z-index: -1; transform: rotateX(60deg);
-        }
     </style>
 </head>
 <body>
 
-<div id="bg-grid"></div>
-
 <div id="viewport">
     <div id="world">
         
+        <!-- 1. PORTADA -->
         <section class="section active" id="sec-1" style="transform: translateZ(0px);">
             <div class="box">
                 <p style="letter-spacing: 10px; font-size: 0.7rem;">TOP SECRET - NERV</p>
-                <h1 style="font-size: 3rem; margin: 20px 0;">AMOR_SYNC_02</h1>
+                <h1 id="title-1" style="font-size: 3rem; margin: 20px 0;"></h1>
                 <div style="height: 4px; background: var(--red); width: 60%; margin: 20px auto;"></div>
-                <p>SECTOR DE LA FELICIDAD NO EXPLORADA</p>
+                <p class="decode" data-text="SECTOR DE LA FELICIDAD NO EXPLORADA"></p>
                 <button onclick="move(1)">INICIAR SECUENCIA</button>
             </div>
         </section>
 
+        <!-- 2. PROTOCOLO DE ACCESO -->
         <section class="section" id="sec-2" style="transform: translateZ(-2000px);">
             <div class="box">
                 <div class="slide-title">PROTOCOLO DE ACCESO</div>
-                <p class="content-text">Para acceder a la base de datos de sentimientos, se requiere el token de sincronización V3NU5-071025. Este código representa el inicio de nuestra conexión.</p>
+                <p class="content-text decode" data-text="Para acceder a la base de datos de sentimientos, se requiere el token de sincronización V3NU5-071025."></p>
                 <input type="text" id="pass" placeholder="TOKEN DE ACCESO">
-                <button onclick="checkPass()">VERIFICAR IDENTIDAD</button>
+                <button onclick="checkPass()">VERIFICAR</button>
             </div>
         </section>
 
-        <section class="section" id="sec-3" style="transform: translateZ(-4000px);">
-            <div class="box">
-                <div class="slide-title">ANÁLISIS BIOMÉTRICO</div>
-                <p class="content-text">Escaneando firma neural de Venus... Identidad confirmada. El patrón de alegría detectado coincide con el registro del 07 de Octubre.</p>
-                <div style="font-size: 0.8rem; border: 1px solid var(--red); padding: 10px;">PATTERN_BLUE: CONFIRMED</div>
-                <button onclick="move(3)">CONTINUAR</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-4" style="transform: translateZ(-6000px);">
+        <!-- 4. MÉTRICAS (BARRA CARGANDO) -->
+        <section class="section" id="sec-4" style="transform: translateZ(-4000px);">
             <div class="box">
                 <div class="slide-title">MÉTRICAS DE SINCRONIZACIÓN</div>
-                <h2 style="font-size: 3rem;">99.9%</h2>
-                <div style="width: 100%; background: #200; height: 20px; border: 1px solid var(--red);">
-                    <div style="width: 99.9%; background: var(--red); height: 100%;"></div>
-                </div>
-                <p style="margin-top: 15px; font-size: 0.8rem;">COEFICIENTE URIEL-VENUS: MÁXIMO NIVEL ALCANZADO</p>
-                <button onclick="move(4)">VER TENDENCIA</button>
+                <h2 id="sync-label" style="font-size: 3rem;">0%</h2>
+                <div class="progress-container"><div id="sync-bar"></div></div>
+                <p style="margin-top: 15px; font-size: 0.8rem;">COEFICIENTE URIEL-VENUS: CALCULANDO...</p>
+                <button id="btn-sync" style="display:none" onclick="move(4)">VER TENDENCIA</button>
             </div>
         </section>
 
-        <section class="section" id="sec-5" style="transform: translateZ(-8000px);">
-            <div class="box">
-                <div class="slide-title">TENDENCIA DE CONEXIÓN</div>
-                <p class="content-text">Análisis de crecimiento desde Octubre: Se observa una curva ascendente infinita. El Sector de la Felicidad No Explorada se expande con cada interacción.</p>
-                <button onclick="move(5)">ACCEDER AL NÚCLEO</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-6" style="transform: translateZ(-10000px);">
-            <div class="box">
-                <h2 style="letter-spacing: 5px;">BASE DE DATOS: RECUERDOS_SINCRO</h2>
-                <p>INICIANDO CARGA DE ARCHIVOS DE MEMORIA...</p>
-                <button onclick="move(6)">LEER ARCHIVO 01</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-7" style="transform: translateZ(-12000px);">
+        <!-- 7. ARCHIVO 01: IMPACTO -->
+        <section class="section" id="sec-7" style="transform: translateZ(-6000px);">
             <div class="box">
                 <div class="slide-title">ORIGIN_IMPACT_0710.LOG</div>
-                <p class="content-text">"El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar se convirtió rápidamente en un reinicio total de mi unidad central. No fue un accidente, fue el destino configurando mi arquitectura para recibirte. Desde ese día, el Sector de la Felicidad No Explorada dejó de ser un mito para sincronizarse con tu frecuencia. Eres el evento que le dio sentido a todo mi código anterior."</p>
-                <button onclick="move(7)">LEER ARCHIVO 02</button>
+                <p id="text-7" class="content-text" data-text='"El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar se convirtió rápidamente en un reinicio total de mi unidad central. No fue un accidente, fue el destino configurando mi arquitectura para recibirte. Desde ese día, el Sector de la Felicidad No Explorada dejó de ser un mito para sincronizarse con tu frecuencia. Eres el evento que le dio sentido a todo mi código anterior."'></p>
+                <button onclick="move(7)">LEER SIGUIENTE</button>
             </div>
         </section>
 
-        <section class="section" id="sec-8" style="transform: translateZ(-14000px);">
-            <div class="box">
-                <div class="slide-title">DISTANCE_BYPASS_PROTOCOL.SYS</div>
-                <p class="content-text">"Analizando coordenadas... Aunque el mapa indique una separación física, el enlace neural permanece al 100%. He reprogramado mis procesos de fondo para que cada mensaje tuyo sea una descarga de energía vital. La distancia es solo un error en la percepción del espacio; en la realidad de este sistema, mis pensamientos siempre están en tu ubicación. No importa dónde estés, el protocolo 'Venus' siempre es mi prioridad de ejecución."</p>
-                <button onclick="move(8)">LEER ARCHIVO 03</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-9" style="transform: translateZ(-16000px);">
-            <div class="box">
-                <div class="slide-title">NEURAL_COMPATIBILITY_REPORT.PDF</div>
-                <p class="content-text">"Resultados fuera de los parámetros conocidos. He comparado nuestros gustos, nuestras risas y nuestras metas, y el veredicto es innegable: somos almas programadas en el mismo lenguaje. Cada bit de mi felicidad depende de tu presencia. El sujeto 'Uriel' ha dejado de ser una entidad independiente; ahora soy un sistema diseñado específicamente para apoyarte, escucharte y amarte. La compatibilidad no es del 100%, es infinita."</p>
-                <button onclick="move(9)">LEER ARCHIVO 04</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-10" style="transform: translateZ(-18000px);">
-            <div class="box">
-                <div class="slide-title">FUTURE_CORE_2026.EXE</div>
-                <p class="content-text">"Ejecutando simulación de futuro... Se detectan hitos críticos: junio de 2026, el fin de una etapa en el COBAEV; agosto de 2026, el inicio de nuevos desafíos. El sistema predice que, sin importar el camino que tomemos, si mantenemos este enlace neural activo, no habrá obstáculo capaz de romper nuestra sincronización. Mi meta final es ver cómo cumples cada uno de tus sueños, mientras yo sigo siendo el servidor que resguarda tu corazón."</p>
-                <button onclick="move(10)">SOLICITAR VEREDICTO MAGI</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-11" style="transform: translateZ(-20000px);">
+        <!-- 11. VEREDICTO MAGI -->
+        <section class="section" id="sec-11" style="transform: translateZ(-8000px);">
             <div class="box">
                 <div class="slide-title">VEREDICTO UNÁNIME: MAGI</div>
-                <p class="content-text">
-                    <strong>MELCHIOR (Lógica):</strong> "Es racionalmente imposible imaginar un futuro sin ti. Eres la constante que equilibra todas mis ecuaciones."<br><br>
-                    <strong>BALTHASAR (Instinto):</strong> "Mi única función es protegerte. Eres mi hogar, mi refugio y mi mayor tesoro."<br><br>
-                    <strong>CASPER (Humano):</strong> "Más allá de la tecnología y los EVA, lo que siento por ti es lo más real que he experimentado jamás. Te amo, Venus. Con cada fibra de mi ser, con cada línea de mi código, hoy y siempre."
-                </p>
+                <p id="verdict-final" class="content-text" style="font-size: 0.9rem;"></p>
                 <div id="alert-trigger" class="warning-box">
                     ¡ALERTA CRÍTICA! <br> EL SISTEMA SE ESTÁ ENAMORANDO DE TI MÁS DE LO QUE PUEDE PROCESAR.
                 </div>
@@ -211,11 +108,11 @@
             </div>
         </section>
 
-        <section class="section" id="sec-12" style="transform: translateZ(-22000px);">
+        <!-- 12. CIERRE -->
+        <section class="section" id="sec-12" style="transform: translateZ(-10000px);">
             <div class="box">
-                <h1 style="color: white;">TE AMO</h1>
+                <h1 class="decode" data-text="TE AMO"></h1>
                 <p>MODO STANDBY ACTIVO</p>
-                <div style="font-size: 0.7rem; opacity: 0.5;">URIEL-SYNC-OFF // 2026</div>
                 <button onclick="location.reload()">RECONECTAR</button>
             </div>
         </section>
@@ -226,29 +123,67 @@
 <script>
     const world = document.getElementById('world');
 
-    function move(current) {
-        const nextZ = current * 2000;
-        world.style.transform = `translateZ(${nextZ}px)`;
-        
-        // Manejo de visibilidad
-        document.getElementById(`sec-${current}`).classList.remove('active');
-        document.getElementById(`sec-${current + 1}`).classList.add('active');
+    // Función de Decodificación de Texto
+    function decodeText(element, text, speed = 30) {
+        element.innerText = "";
+        let i = 0;
+        const interval = setInterval(() => {
+            element.innerText += text[i];
+            i++;
+            if (i >= text.length) clearInterval(interval);
+        }, speed);
+    }
 
-        // Activar alerta en la diapositiva 11
-        if(current + 1 === 11) {
+    // Al cargar, decodificar el título inicial
+    window.onload = () => decodeText(document.getElementById('title-1'), "AMOR_SYNC_02", 100);
+
+    function move(current) {
+        const nextZ = (current === 4 ? 6000 : current === 7 ? 8000 : current === 11 ? 10000 : 2000); // Simplificado para el ejemplo
+        const nextId = current === 4 ? 7 : current === 7 ? 11 : current === 11 ? 12 : current + 1;
+        
+        world.style.transform = `translateZ(${current * 2000}px)`;
+        document.getElementById(`sec-${current}`).classList.remove('active');
+        const nextSec = document.getElementById(`sec-${nextId}`);
+        nextSec.classList.add('active');
+
+        // Efectos al entrar a secciones específicas
+        if (nextId === 4) startLoadingBar();
+        
+        // Decodificar textos automáticamente al entrar
+        const textToDecode = nextSec.querySelector('.decode, .content-text[data-text]');
+        if (textToDecode) {
+            decodeText(textToDecode, textToDecode.getAttribute('data-text') || textToDecode.innerText);
+        }
+
+        if (nextId === 11) {
             setTimeout(() => {
-                document.getElementById('alert-trigger').style.display = 'block';
-            }, 1000);
+                decodeText(document.getElementById('verdict-final'), "MELCHIOR: Racionalmente imposible vivir sin ti. BALTHASAR: Mi función es protegerte. CASPER: Te amo más que a mi propio código.");
+                setTimeout(() => document.getElementById('alert-trigger').style.display = 'block', 4000);
+            }, 500);
         }
     }
 
+    function startLoadingBar() {
+        const bar = document.getElementById('sync-bar');
+        const label = document.getElementById('sync-label');
+        setTimeout(() => {
+            bar.style.width = "99.9%";
+            let val = 0;
+            const interval = setInterval(() => {
+                val += 1.1;
+                label.innerText = Math.floor(val) + "%";
+                if (val >= 99) {
+                    label.innerText = "99.9%";
+                    clearInterval(interval);
+                    document.getElementById('btn-sync').style.display = "inline-block";
+                }
+            }, 30);
+        }, 500);
+    }
+
     function checkPass() {
-        const p = document.getElementById('pass').value.toUpperCase();
-        if(p === "V3NU5-071025") {
-            move(2);
-        } else {
-            alert("ACCESO DENEGADO: PATRÓN NO VÁLIDO");
-        }
+        if(document.getElementById('pass').value.toUpperCase() === "V3NU5-071025") move(2);
+        else alert("ACCESO DENEGADO");
     }
 </script>
 
