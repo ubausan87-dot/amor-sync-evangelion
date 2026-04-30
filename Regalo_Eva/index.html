@@ -9,47 +9,51 @@
         
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: #000; color: var(--red);
-            font-family: 'Courier New', monospace; overflow: hidden;
+            background: #000; color: var(--red); 
+            font-family: 'Courier New', monospace; overflow: hidden; 
         }
 
-        /* Scanlines y efecto CRT */
-        body::before {
-            content: " "; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        /* Scanlines y efecto CRT de Evangelion */
+        body::before { 
+            content: " "; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 1000;
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); 
+            background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 1000; 
         }
 
+        /* Entorno 3D */
         #viewport { perspective: 1200px; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #world { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .section {
-            position: absolute; width: 100vw; height: 100vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; backface-visibility: hidden; text-align: center;
-            opacity: 0; transition: opacity 0.5s;
+        .section { 
+            position: absolute; width: 100vw; height: 100vh; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; backface-visibility: hidden; text-align: center; 
+            opacity: 0; transition: opacity 0.5s; 
         }
         .active { opacity: 1 !important; }
 
-        .box {
-            border: 2px solid var(--red); padding: 30px; background: rgba(15,0,0,0.95);
-            box-shadow: 0 0 30px var(--glow); width: 90%; max-width: 600px; 
-            min-height: 250px; display: flex; flex-direction: column; justify-content: center;
+        /* Estilo de las cajas de NERV */
+        .box { 
+            border: 2px solid var(--red); padding: 30px; background: rgba(15,0,0,0.95); 
+            box-shadow: 0 0 30px var(--glow); width: 90%; max-width: 700px; min-height: 280px; 
+            display: flex; flex-direction: column; justify-content: center; 
             word-wrap: break-word; overflow-wrap: break-word;
         }
 
         .slide-title { font-size: 1.4rem; border-left: 8px solid var(--red); padding-left: 15px; text-align: left; margin-bottom: 20px; letter-spacing: 2px; font-weight: bold; }
-        .content-text { font-size: 1rem; line-height: 1.5; text-align: justify; color: #fff; white-space: pre-wrap; }
+        .content-text { font-size: 1rem; line-height: 1.6; text-align: justify; color: #fff; white-space: pre-wrap; min-height: 150px; }
 
-        /* Barra de carga */
-        .progress-container { width: 100%; background: #200; height: 25px; border: 1px solid var(--red); margin-top: 20px; }
-        #sync-bar { width: 0%; height: 100%; background: var(--red); box-shadow: 0 0 15px var(--red); transition: width 0.1s linear; }
+        /* Barra de progreso */
+        .progress-container { width: 100%; background: #200; height: 25px; border: 1px solid var(--red); margin-top: 20px; position: relative; }
+        #sync-bar { width: 0%; height: 100%; background: var(--red); box-shadow: 0 0 15px var(--red); }
 
-        button { background: var(--red); color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 25px; font-family: 'Courier New', monospace; }
+        /* Elementos interactivos */
+        button { background: var(--red); color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 25px; font-family: 'Courier New', monospace; font-size: 1rem; transition: 0.3s; }
         button:hover { background: #fff; box-shadow: 0 0 20px #fff; }
-        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 12px; margin: 15px 0; width: 80%; text-align: center; font-family: 'Courier New', monospace; font-size: 1.1rem; }
+        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 15px; margin: 15px 0; width: 80%; text-align: center; font-family: 'Courier New', monospace; font-size: 1.2rem; outline: none; text-transform: uppercase; }
 
-        .warning-box { display: none; border: 2px solid #fff; background: var(--red); color: #fff; padding: 15px; font-weight: bold; margin-top: 20px; animation: pulse 0.4s infinite alternate; }
+        /* Alerta de enamoramiento */
+        .warning-box { display: none; border: 2px solid #fff; background: var(--red); color: #fff; padding: 20px; font-weight: bold; margin-top: 20px; animation: pulse 0.4s infinite alternate; font-size: 1.1rem; }
         @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
     </style>
 </head>
@@ -60,57 +64,82 @@
         
         <section class="section active" id="sec-1" style="transform: translateZ(0px);">
             <div class="box">
-                <p style="letter-spacing: 10px; font-size: 0.7rem; color: var(--red);">TOP SECRET - NERV</p>
-                <h1 style="font-size: 2.5rem; margin: 15px 0;">AMOR_SYNC_02</h1>
+                <p style="letter-spacing: 10px; font-size: 0.8rem; color: var(--red); margin-bottom: 0;">TOP SECRET - NERV</p>
+                <h1 style="font-size: 3rem; margin: 15px 0;">AMOR_SYNC_02</h1>
                 <div style="height: 3px; background: var(--red); width: 100%; margin-bottom: 20px;"></div>
-                <p id="text-1" class="content-text" style="text-align: center; color: var(--red);"></p>
-                <button onclick="startApp()">INICIAR PROTOCOLO</button>
+                <p id="text-1" class="content-text" style="text-align: center; color: var(--red); min-height: 30px;"></p>
+                <button onclick="startApp()">INICIAR SECUENCIA</button>
             </div>
         </section>
 
         <section class="section" id="sec-2" style="transform: translateZ(-2000px);">
             <div class="box">
                 <div class="slide-title">PROTOCOLO DE ACCESO</div>
-                <p id="text-2" class="content-text"></p>
-                <input type="text" id="pass" placeholder="TOKEN_ID">
-                <button onclick="checkPass()">VERIFICAR</button>
+                <p id="text-2" class="content-text" style="min-height: 50px;"></p>
+                <input type="text" id="pass" placeholder="TOKEN V3NU5" autocomplete="off">
+                <button onclick="checkPass()">VERIFICAR IDENTIDAD</button>
             </div>
         </section>
 
-        <section class="section" id="sec-4" style="transform: translateZ(-4000px);">
+        <section class="section" id="sec-3" style="transform: translateZ(-4000px);">
             <div class="box">
-                <div class="slide-title">SINCRONIZACIÓN</div>
-                <h2 id="sync-label" style="font-size: 3.5rem; margin: 10px 0;">0%</h2>
+                <div class="slide-title">MÉTRICAS DE SINCRONIZACIÓN</div>
+                <h2 id="sync-label" style="font-size: 4rem; margin: 10px 0;">0%</h2>
                 <div class="progress-container"><div id="sync-bar"></div></div>
-                <p style="margin-top: 15px; font-size: 0.8rem; color: var(--red);">ESTADO: CONEXIÓN ETERNA EN SECTOR FELICIDAD</p>
-                <button id="btn-sync" style="visibility:hidden" onclick="move(4, 7)">LEER ARCHIVOS</button>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: var(--red);">ESTADO: CONQUISTANDO EL SECTOR DE LA FELICIDAD NO EXPLORADA</p>
+                <button id="btn-sync" style="visibility:hidden" onclick="move(3, 4)">ABRIR ARCHIVOS DEL NÚCLEO</button>
             </div>
         </section>
 
-        <section class="section" id="sec-7" style="transform: translateZ(-6000px);">
+        <section class="section" id="sec-4" style="transform: translateZ(-6000px);">
             <div class="box">
-                <div class="slide-title">ORIGIN_IMPACT.LOG</div>
+                <div class="slide-title">FILE: ORIGIN_IMPACT_0710.LOG</div>
+                <p id="text-4" class="content-text"></p>
+                <button onclick="move(4, 5)">LEER ARCHIVO 02</button>
+            </div>
+        </section>
+
+        <section class="section" id="sec-5" style="transform: translateZ(-8000px);">
+            <div class="box">
+                <div class="slide-title">FILE: DISTANCE_BYPASS_PROTOCOL.SYS</div>
+                <p id="text-5" class="content-text"></p>
+                <button onclick="move(5, 6)">LEER ARCHIVO 03</button>
+            </div>
+        </section>
+
+        <section class="section" id="sec-6" style="transform: translateZ(-10000px);">
+            <div class="box">
+                <div class="slide-title">FILE: NEURAL_COMPATIBILITY_REPORT.PDF</div>
+                <p id="text-6" class="content-text"></p>
+                <button onclick="move(6, 7)">LEER ARCHIVO 04</button>
+            </div>
+        </section>
+
+        <section class="section" id="sec-7" style="transform: translateZ(-12000px);">
+            <div class="box">
+                <div class="slide-title">FILE: FUTURE_CORE_2026.EXE</div>
                 <p id="text-7" class="content-text"></p>
-                <button onclick="move(7, 11)">VEREDICTO MAGI</button>
+                <button onclick="move(7, 8)">SOLICITAR VEREDICTO MAGI</button>
             </div>
         </section>
 
-        <section class="section" id="sec-11" style="transform: translateZ(-8000px);">
+        <section class="section" id="sec-8" style="transform: translateZ(-14000px);">
             <div class="box">
-                <div class="slide-title">VEREDICTO UNÁNIME</div>
-                <p id="text-11" class="content-text" style="font-size: 0.9rem;"></p>
+                <div class="slide-title">VEREDICTO UNÁNIME: MAGI</div>
+                <p id="text-8" class="content-text" style="font-size: 0.95rem; line-height: 1.8;"></p>
                 <div id="alert-trigger" class="warning-box">
                     ¡ALERTA CRÍTICA! <br> EL SISTEMA SE ESTÁ ENAMORANDO DE TI MÁS DE LO QUE PUEDE PROCESAR.
                 </div>
-                <button onclick="move(11, 12)">CIERRE FINAL</button>
+                <button onclick="move(8, 9)" id="btn-final" style="display:none;">CIERRE DE SISTEMAS</button>
             </div>
         </section>
 
-        <section class="section" id="sec-12" style="transform: translateZ(-10000px);">
+        <section class="section" id="sec-9" style="transform: translateZ(-16000px);">
             <div class="box">
-                <h1 style="font-size: 3.5rem; margin: 0;">TE AMO</h1>
-                <p style="margin-top: 20px;">SISTEMA EN STANDBY</p>
-                <button onclick="location.reload()">REINICIAR</button>
+                <h1 style="font-size: 5rem; margin: 0; color: #fff;">TE AMO</h1>
+                <p style="margin-top: 20px; font-size: 1.2rem; letter-spacing: 5px;">MODO STANDBY ACTIVO</p>
+                <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 10px;">URIEL-SYNC-OFF // 2026</div>
+                <button onclick="location.reload()" style="margin-top: 40px;">REINICIAR CONEXIÓN</button>
             </div>
         </section>
 
@@ -120,74 +149,92 @@
 <script>
     const world = document.getElementById('world');
     
-    // Función de escritura mejorada que respeta espacios
+    // Función de escritura que respeta los espacios perfectamente
     function typeWriter(elementId, text, speed = 25) {
         const element = document.getElementById(elementId);
-        element.innerHTML = "";
+        element.innerHTML = ""; 
         let i = 0;
         function type() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(type, speed);
+            if (i < text.length) { 
+                element.innerHTML += text.charAt(i); 
+                i++; 
+                setTimeout(type, speed); 
             }
         }
         type();
     }
 
-    function startApp() {
+    // Inicia la primera animación sin dejar la pantalla negra
+    window.onload = () => {
         typeWriter('text-1', "SECTOR DE LA FELICIDAD NO EXPLORADA", 50);
-        setTimeout(() => move(1, 2), 2500);
+    };
+
+    function startApp() { 
+        move(1, 2); 
     }
 
     function checkPass() {
-        if(document.getElementById('pass').value.toUpperCase() === "V3NU5-071025") {
-            move(2, 4);
+        const password = document.getElementById('pass').value.toUpperCase().trim();
+        if(password === "V3NU5-071025") {
+            move(2, 3);
         } else {
-            alert("ACCESO DENEGADO");
-        }
-    }
-
-    function move(currentId, nextId) {
-        const nextZ = (nextId - 1) * 2000;
-        world.style.transform = `translateZ(${nextZ}px)`;
-        
-        document.getElementById(`sec-${currentId}`).classList.remove('active');
-        const nextSec = document.getElementById(`sec-${nextId}`);
-        nextSec.classList.add('active');
-
-        // Disparar eventos por sección
-        if(nextId === 2) typeWriter('text-2', "Para acceder a la base de datos de sentimientos, se requiere el token de sincronización V3NU5-071025.");
-        if(nextId === 4) startSync();
-        if(nextId === 7) typeWriter('text-7', '"El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar se convirtió rápidamente en un reinicio total de mi unidad central. No fue un accidente, fue el destino configurando mi arquitectura para recibirte. Desde ese día, el Sector de la Felicidad No Explorada dejó de ser un mito. Eres el evento que le dio sentido a todo mi código anterior."');
-        if(nextId === 11) {
-            typeWriter('text-11', 'MELCHIOR: Es racionalmente imposible vivir sin ti. BALTHASAR: Mi única función es protegerte. CASPER: Te amo, Venus. Con cada fibra de mi ser, hoy y siempre.', 30);
-            setTimeout(() => {
-                document.getElementById('alert-trigger').style.display = 'block';
-            }, 5000);
+            alert("ACCESO DENEGADO: PATRÓN NO VÁLIDO");
         }
     }
 
     function startSync() {
-        const bar = document.getElementById('sync-bar');
-        const label = document.getElementById('sync-label');
         let progress = 0;
         const interval = setInterval(() => {
             progress += 0.5;
-            bar.style.width = progress + "%";
-            label.innerText = Math.floor(progress) + "%";
-            if(progress >= 99.9) {
-                clearInterval(interval);
-                label.innerText = "99.9%";
-                document.getElementById('btn-sync').style.visibility = "visible";
+            document.getElementById('sync-bar').style.width = progress + "%";
+            document.getElementById('sync-label').innerText = Math.floor(progress) + "%";
+            if(progress >= 99.9) { 
+                clearInterval(interval); 
+                document.getElementById('sync-label').innerText = "99.9%"; 
+                document.getElementById('btn-sync').style.visibility = "visible"; 
             }
-        }, 20);
+        }, 15);
     }
 
-    // Inicialización de la primera pantalla para que no esté en negro
-    window.onload = () => {
-        typeWriter('text-1', "LOCALIZANDO SECTOR...", 50);
-    };
+    // Lógica principal de movimiento 3D y disparo de textos
+    function move(currentId, nextId) {
+        // Mueve el "mundo" hacia adelante multiplicando por 2000 positivo para alcanzar las secciones en negativo
+        const nextZ = (nextId - 1) * 2000;
+        world.style.transform = `translateZ(${nextZ}px)`;
+        
+        // Maneja la opacidad para que la transición sea limpia
+        document.getElementById(`sec-${currentId}`).classList.remove('active');
+        document.getElementById(`sec-${nextId}`).classList.add('active');
+
+        // Dispara la máquina de escribir dependiendo de la sección a la que llegamos
+        if(nextId === 2) {
+            typeWriter('text-2', "Para acceder a la base de datos de sentimientos, se requiere la clave de sincronización V3NU5-071025. Este código representa el inicio de nuestra conexión.", 20);
+        }
+        if(nextId === 3) {
+            startSync();
+        }
+        if(nextId === 4) {
+            typeWriter('text-4', '"El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar se convirtió rápidamente en un reinicio total de mi unidad central. No fue un accidente, fue el destino configurando mi arquitectura para recibirte. Desde ese día, el nodo Álamo dejó de operar de forma aislada para sincronizarse con tu frecuencia. Eres el evento que le dio sentido a todo mi código anterior."', 20);
+        }
+        if(nextId === 5) {
+            typeWriter('text-5', '"Analizando coordenadas... Aunque el mapa indique una separación física, el enlace neural permanece al 100%. He reprogramado mis procesos de fondo para que cada mensaje tuyo sea una descarga de energía vital. La distancia es solo un error en la percepción del espacio; en la realidad de este sistema, mis pensamientos siempre están en tu ubicación. No importa dónde estés, el protocolo \'Venus\' siempre es mi prioridad de ejecución."', 20);
+        }
+        if(nextId === 6) {
+            typeWriter('text-6', '"Resultados fuera de los parámetros conocidos. He comparado nuestros gustos, nuestras risas y nuestras metas, y el veredicto es innegable: somos almas programadas en el mismo lenguaje. Cada bit de mi felicidad depende de tu presencia. El sujeto \'Uriel\' ha dejado de ser una entidad independiente; ahora soy un sistema diseñado específicamente para apoyarte, escucharte y amarte. La compatibilidad no es del 100%, es infinita."', 20);
+        }
+        if(nextId === 7) {
+            typeWriter('text-7', '"Ejecutando simulación de futuro... Se detectan hitos críticos: junio de 2026, el fin de una etapa en el COBAEV; agosto de 2026, el inicio de nuevos desafíos. El sistema predice que, sin importar el camino que tomemos, si mantenemos este enlace neural activo, no habrá obstáculo capaz de romper nuestra sincronización. Mi meta final es ver cómo cumples cada uno de tus sueños, mientras yo sigo siendo el servidor que resguarda tu corazón."', 20);
+        }
+        if(nextId === 8) {
+            typeWriter('text-8', 'MELCHIOR (Lógica): "Es racionalmente imposible imaginar un futuro sin ti. Eres la constante que equilibra todas mis ecuaciones."\n\nBALTHASAR (Instinto): "Mi única función es protegerte. Eres mi hogar, mi refugio y mi mayor tesoro."\n\nCASPER (Humano): "Más allá de la tecnología y los EVA, lo que siento por ti es lo más real que he experimentado jamás. Te amo, Venus. Con cada fibra de mi ser, con cada línea de mi código, hoy y siempre."', 20);
+            
+            // Aparece la alerta crítica después de 8 segundos (dando tiempo a que termine de escribir)
+            setTimeout(() => {
+                document.getElementById('alert-trigger').style.display = 'block';
+                document.getElementById('btn-final').style.display = 'inline-block';
+            }, 8000);
+        }
+    }
 </script>
 
 </body>
