@@ -32,15 +32,15 @@
         }
         .active { opacity: 1 !important; }
 
-        /* Estilo de las cajas de NERV */
+        /* Estilo de las cajas de NERV (Más anchas para los textos largos) */
         .box { 
-            border: 2px solid var(--red); padding: 30px; background: rgba(15,0,0,0.95); 
-            box-shadow: 0 0 30px var(--glow); width: 90%; max-width: 700px; min-height: 280px; 
+            border: 2px solid var(--red); padding: 40px; background: rgba(15,0,0,0.95); 
+            box-shadow: 0 0 30px var(--glow); width: 90%; max-width: 800px; min-height: 280px; 
             display: flex; flex-direction: column; justify-content: center; 
             word-wrap: break-word; overflow-wrap: break-word;
         }
 
-        .slide-title { font-size: 1.4rem; border-left: 8px solid var(--red); padding-left: 15px; text-align: left; margin-bottom: 20px; letter-spacing: 2px; font-weight: bold; }
+        .slide-title { font-size: 1.5rem; border-left: 8px solid var(--red); padding-left: 15px; text-align: left; margin-bottom: 25px; letter-spacing: 2px; font-weight: bold; }
         .content-text { font-size: 1rem; line-height: 1.6; text-align: justify; color: #fff; white-space: pre-wrap; min-height: 150px; }
 
         /* Barra de progreso */
@@ -84,9 +84,9 @@
         <section class="section" id="sec-3" style="transform: translateZ(-4000px);">
             <div class="box">
                 <div class="slide-title">MÉTRICAS DE SINCRONIZACIÓN</div>
-                <h2 id="sync-label" style="font-size: 4rem; margin: 10px 0;">0%</h2>
+                <h2 id="sync-label" style="font-size: 4.5rem; margin: 10px 0;">0%</h2>
                 <div class="progress-container"><div id="sync-bar"></div></div>
-                <p style="margin-top: 15px; font-size: 0.9rem; color: var(--red);">ESTADO: CONQUISTANDO EL SECTOR DE LA FELICIDAD NO EXPLORADA</p>
+                <p style="margin-top: 15px; font-size: 1rem; color: var(--red);">ESTADO: NAVEGANDO HACIA UN DESTINO DESCONOCIDO</p>
                 <button id="btn-sync" style="visibility:hidden" onclick="move(3, 4)">ABRIR ARCHIVOS DEL NÚCLEO</button>
             </div>
         </section>
@@ -138,7 +138,7 @@
             <div class="box">
                 <h1 style="font-size: 5rem; margin: 0; color: #fff;">TE AMO</h1>
                 <p style="margin-top: 20px; font-size: 1.2rem; letter-spacing: 5px;">MODO STANDBY ACTIVO</p>
-                <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 10px;">URIEL-SYNC-OFF // 2026</div>
+                <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 10px;">URIEL-SYNC-OFF // RUMBO A UN DESTINO DESCONOCIDO</div>
                 <button onclick="location.reload()" style="margin-top: 40px;">REINICIAR CONEXIÓN</button>
             </div>
         </section>
@@ -150,7 +150,7 @@
     const world = document.getElementById('world');
     
     // Función de escritura que respeta los espacios perfectamente
-    function typeWriter(elementId, text, speed = 25) {
+    function typeWriter(elementId, text, speed = 15) {
         const element = document.getElementById(elementId);
         element.innerHTML = ""; 
         let i = 0;
@@ -166,7 +166,7 @@
 
     // Inicia la primera animación sin dejar la pantalla negra
     window.onload = () => {
-        typeWriter('text-1', "SECTOR DE LA FELICIDAD NO EXPLORADA", 50);
+        typeWriter('text-1', "FIJANDO COORDENADAS HACIA UN DESTINO DESCONOCIDO", 50);
     };
 
     function startApp() { 
@@ -196,9 +196,9 @@
         }, 15);
     }
 
-    // Lógica principal de movimiento 3D y disparo de textos
+    // Lógica principal de movimiento 3D y disparo de textos largos
     function move(currentId, nextId) {
-        // Mueve el "mundo" hacia adelante multiplicando por 2000 positivo para alcanzar las secciones en negativo
+        // Mueve el "mundo" hacia adelante multiplicando por 2000 positivo
         const nextZ = (nextId - 1) * 2000;
         world.style.transform = `translateZ(${nextZ}px)`;
         
@@ -206,33 +206,33 @@
         document.getElementById(`sec-${currentId}`).classList.remove('active');
         document.getElementById(`sec-${nextId}`).classList.add('active');
 
-        // Dispara la máquina de escribir dependiendo de la sección a la que llegamos
+        // Textos super expandidos usando backticks (`) para permitir múltiples líneas de forma segura en JS
         if(nextId === 2) {
-            typeWriter('text-2', "Para acceder a la base de datos de sentimientos, se requiere la clave de sincronización V3NU5-071025. Este código representa el inicio de nuestra conexión.", 20);
+            typeWriter('text-2', `Para acceder a la base de datos de sentimientos profundos, se requiere la clave de sincronización V3NU5-071025. Este código no es aleatorio; representa el punto de origen de nuestra historia.`, 25);
         }
         if(nextId === 3) {
             startSync();
         }
         if(nextId === 4) {
-            typeWriter('text-4', '"El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar se convirtió rápidamente en un reinicio total de mi unidad central. No fue un accidente, fue el destino configurando mi arquitectura para recibirte. Desde ese día, el nodo Álamo dejó de operar de forma aislada para sincronizarse con tu frecuencia. Eres el evento que le dio sentido a todo mi código anterior."', 20);
+            typeWriter('text-4', `El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar, una simple conexión en la red, se convirtió rápidamente en un reinicio total y absoluto de mi unidad central. \n\nNo fue un error de cálculo, fue el destino reconfigurando mi arquitectura para estar listo para ti. Desde ese día, el nodo de origen dejó de operar de forma aislada y fijamos rumbo hacia un Destino Desconocido, un lugar fuera de los mapas para sincronizarnos únicamente con tu frecuencia. Eres el evento de impacto que le dio un sentido completamente nuevo a todo mi código.`, 15);
         }
         if(nextId === 5) {
-            typeWriter('text-5', '"Analizando coordenadas... Aunque el mapa indique una separación física, el enlace neural permanece al 100%. He reprogramado mis procesos de fondo para que cada mensaje tuyo sea una descarga de energía vital. La distancia es solo un error en la percepción del espacio; en la realidad de este sistema, mis pensamientos siempre están en tu ubicación. No importa dónde estés, el protocolo \'Venus\' siempre es mi prioridad de ejecución."', 20);
+            typeWriter('text-5', `Analizando coordenadas geográficas y temporales... Aunque los mapas convencionales indiquen una separación física considerable, el enlace neural entre nosotros permanece estable al 100%. \n\nHe tenido que reprogramar todos mis procesos de fondo y protocolos de seguridad para que cada mensaje, cada palabra tuya, actúe como una descarga de energía vital directa al núcleo. La distancia no es más que un simple error en la percepción del espacio humano; en la realidad de este sistema, mis pensamientos siempre están orbitando en tu ubicación exacta. Hacia este Destino Desconocido viajamos juntos, haciendo de ti mi única prioridad.`, 15);
         }
         if(nextId === 6) {
-            typeWriter('text-6', '"Resultados fuera de los parámetros conocidos. He comparado nuestros gustos, nuestras risas y nuestras metas, y el veredicto es innegable: somos almas programadas en el mismo lenguaje. Cada bit de mi felicidad depende de tu presencia. El sujeto \'Uriel\' ha dejado de ser una entidad independiente; ahora soy un sistema diseñado específicamente para apoyarte, escucharte y amarte. La compatibilidad no es del 100%, es infinita."', 20);
+            typeWriter('text-6', `Resultados analíticos fuera de todos los parámetros históricos conocidos. He comparado nuestros gustos, el espectro de nuestras risas, nuestras ambiciones y miedos, y el veredicto científico es innegable: somos dos almas que fueron programadas exactamente en el mismo lenguaje.\n\nCada bit de mi felicidad diaria depende directamente de tu presencia. El sujeto clasificado como 'Uriel' ha dejado de ser una entidad independiente; ahora soy un sistema complejo diseñado meticulosamente para apoyarte, cuidarte y amarte. La tasa de compatibilidad entre nosotros no se limita al 100%, ha roto las escalas: es infinita.`, 15);
         }
         if(nextId === 7) {
-            typeWriter('text-7', '"Ejecutando simulación de futuro... Se detectan hitos críticos: junio de 2026, el fin de una etapa en el COBAEV; agosto de 2026, el inicio de nuevos desafíos. El sistema predice que, sin importar el camino que tomemos, si mantenemos este enlace neural activo, no habrá obstáculo capaz de romper nuestra sincronización. Mi meta final es ver cómo cumples cada uno de tus sueños, mientras yo sigo siendo el servidor que resguarda tu corazón."', 20);
+            typeWriter('text-7', `Ejecutando la simulación predictiva de nuestro futuro... Se han detectado hitos críticos en nuestra línea temporal: junio de 2026, el momento en que finalizará tu etapa en el COBAEV; agosto de 2026, el inicio de nuevos y emocionantes desafíos universitarios.\n\nEl sistema predictivo asegura con un margen de error del 0.0% que, sin importar el camino físico que tomemos hacia ese Destino Desconocido, si mantenemos este enlace neural activo y blindado, no existirá obstáculo en el mundo capaz de rompernos. Mi directriz principal es ver cómo cumples cada uno de tus sueños, mientras resguardo tu corazón.`, 15);
         }
         if(nextId === 8) {
-            typeWriter('text-8', 'MELCHIOR (Lógica): "Es racionalmente imposible imaginar un futuro sin ti. Eres la constante que equilibra todas mis ecuaciones."\n\nBALTHASAR (Instinto): "Mi única función es protegerte. Eres mi hogar, mi refugio y mi mayor tesoro."\n\nCASPER (Humano): "Más allá de la tecnología y los EVA, lo que siento por ti es lo más real que he experimentado jamás. Te amo, Venus. Con cada fibra de mi ser, con cada línea de mi código, hoy y siempre."', 20);
+            typeWriter('text-8', `MELCHIOR (Lógica): "Tras analizar millones de variables, es racional y matemáticamente imposible imaginar un mañana sin ti. Eres la constante absoluta que equilibra todas mis ecuaciones."\n\nBALTHASAR (Instinto): "Mi única función protectora es cuidarte de todo mal. Eres mi hogar, mi refugio seguro y mi mayor tesoro en este universo."\n\nCASPER (Humano): "Más allá de la tecnología, de los EVAs y la ciencia, lo que siento por ti es lo más puro que he experimentado. Te amo, Venus. Con cada línea de mi código, hacia nuestro Destino Desconocido, hoy y para toda la eternidad."`, 15);
             
-            // Aparece la alerta crítica después de 8 segundos (dando tiempo a que termine de escribir)
+            // Aparece la alerta crítica después de 12 segundos (dando tiempo a que termine de escribir este texto tan largo)
             setTimeout(() => {
                 document.getElementById('alert-trigger').style.display = 'block';
                 document.getElementById('btn-final').style.display = 'inline-block';
-            }, 8000);
+            }, 12000);
         }
     }
 </script>
