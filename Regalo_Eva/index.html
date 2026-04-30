@@ -3,145 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAGI_OS_v2.0.4</title>
+    <title>MAGI_OS_PREZI_MODE</title>
     <style>
-        :root { --red: #ff0000; --dark: #0a0000; --glow: #ff0000; }
-        body { background: #000; color: var(--red); font-family: 'Courier New', monospace; margin: 0; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        :root { --red: #ff0000; --dark: #050000; }
         
-        /* Efecto de Interferencia de Fondo */
-        body::before {
-            content: " "; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 1000;
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; color: var(--red);
+            font-family: 'Courier New', monospace; overflow: hidden;
         }
 
-        #ui-wrapper { border: 2px solid var(--red); padding: 20px; background: rgba(10,0,0,0.9); box-shadow: 0 0 20px rgba(255,0,0,0.2); width: 90%; max-width: 500px; position: relative; }
-        
-        /* Terminal de Logs Inferior */
-        #console-log {
-            height: 60px; background: #000; border: 1px solid #300; margin-top: 15px;
-            font-size: 0.6rem; padding: 5px; overflow: hidden; color: #800;
+        /* Contenedor de la Cámara */
+        #viewport {
+            perspective: 1000px;
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 10px; width: 80%; text-align: center; margin: 10px 0; }
-        button { background: var(--red); color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 10px; }
-        
-        /* Hexágonos Dinámicos */
-        .magi-hex {
-            display: none; border: 2px solid var(--red); margin: 10px 0; padding: 15px;
-            clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);
-            background: rgba(40,0,0,0.3); opacity: 0; transform: translateY(10px); transition: 0.5s all;
+        /* El "Mundo" que se mueve */
+        #world {
+            position: relative;
+            width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .magi-hex.show { opacity: 1; transform: translateY(0); }
 
-        .glitch { animation: glitch 2s infinite; }
-        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.8; } 51% { opacity: 0.5; } 52% { opacity: 1; } }
+        .section {
+            position: absolute;
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            backface-visibility: hidden;
+            text-align: center;
+        }
+
+        /* Posicionamiento en el espacio 3D (Z-axis) */
+        #sec-login { transform: translateZ(0px); }
+        #sec-stats { transform: translateZ(-2000px) rotateY(10deg); opacity: 0; }
+        #sec-magi  { transform: translateZ(-4000px) rotateX(-10deg); opacity: 0; }
+
+        .active { opacity: 1 !important; transition: opacity 1s; }
+
+        /* Estética NERV */
+        .box {
+            border: 2px solid var(--red);
+            padding: 30px;
+            background: rgba(10,0,0,0.9);
+            box-shadow: 0 0 30px rgba(255,0,0,0.3);
+            max-width: 400px;
+        }
+
+        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 12px; margin: 15px 0; width: 80%; text-align: center; }
+        button { background: var(--red); color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; width: 100%; }
         
-        .bar-bg { width: 100%; height: 10px; border: 1px solid var(--red); margin: 5px 0; }
-        .bar-load { height: 100%; background: var(--red); transition: width 1s; }
-        
-        #logout { font-size: 0.6rem; color: #400; text-decoration: underline; cursor: pointer; margin-top: 15px; display: block; text-align: center; }
+        .hex {
+            border: 1px solid var(--red); margin: 10px; padding: 15px;
+            clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+            background: rgba(50,0,0,0.2);
+        }
+
+        #bg-grid {
+            position: fixed; top: 0; left: 0; width: 200%; height: 200%;
+            background-image: linear-gradient(var(--red) 1px, transparent 1px), linear-gradient(90deg, var(--red) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.05; z-index: -1;
+            transform: rotateX(60deg);
+        }
     </style>
 </head>
 <body>
 
-    <div id="ui-wrapper">
-        <div id="login-zone">
-            <h2 class="glitch" style="text-align: center; margin: 0;">MAGI SYSTEM</h2>
-            <p style="font-size: 0.7rem; text-align: center;">AUTENTICACIÓN REQUERIDA (ALAMO_NODE)</p>
-            <div style="text-align: center;">
-                <input type="text" id="pass" placeholder="USER_TOKEN">
-                <button onclick="access()">AUTH_EXE</button>
+<div id="bg-grid"></div>
+
+<div id="viewport">
+    <div id="world">
+        
+        <section class="section active" id="sec-login">
+            <div class="box">
+                <h2 style="letter-spacing: 5px;">MAGI SYSTEM</h2>
+                <p style="font-size: 0.7rem;">ESPERANDO TOKEN DE ACCESO...</p>
+                <input type="text" id="pass" placeholder="V3NU5-XXXXXX">
+                <button onclick="goToStats()">INICIAR PROTOCOLO</button>
             </div>
-        </div>
+        </section>
 
-        <div id="core-zone" style="display: none;">
-            <h3 style="margin: 0; font-size: 0.9rem;">SYNC_STATUS: <span id="cpu-load">99.9</span>%</h3>
-            <div class="bar-bg"><div class="bar-load" id="sync-bar" style="width: 0%;"></div></div>
-            
-            <div id="timer" style="font-size: 1.2rem; font-weight: bold; text-align: center; margin: 15px 0; border: 1px solid #300; padding: 5px;"></div>
-            
-            <button id="query-btn" onclick="runMagi()">CONSULTAR MATRIZ MAGI</button>
-            
-            <div id="magi-display">
-                <div class="magi-hex" id="m1"><b>MELCHIOR-1:</b> Lógica impecable. Venus detectada como prioridad.</div>
-                <div class="magi-hex" id="m2"><b>BALTHASAR-2:</b> Instinto estable. Protección de núcleo activada.</div>
-                <div class="magi-hex" id="m3"><b>CASPER-3:</b> Humano: Te amo, Venus. Eres mi mundo.</div>
+        <section class="section" id="sec-stats">
+            <div class="box">
+                <h3>ESTADO DE SINCRONIZACIÓN</h3>
+                <div id="timer" style="font-size: 1.5rem; margin: 20px 0; font-weight: bold;"></div>
+                <div style="text-align: left; font-size: 0.8rem;">
+                    SYNC RATE: 99.9% <br>
+                    NODE: ÁLAMO, VERACRUZ <br>
+                    STATUS: ETERNAL_LINK
+                </div>
+                <button onclick="goToMagi()" style="margin-top: 20px;">SOLICITAR VEREDICTO</button>
             </div>
+        </section>
 
-            <span id="logout" onclick="location.reload()">TERMINAR_CONEXIÓN_</span>
-        </div>
+        <section class="section" id="sec-magi">
+            <h2 style="color: white; margin-bottom: 20px;">SISTEMA MAGI: UNÁNIME</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <div class="hex"><b>MELCHIOR-1</b> <br> <span style="font-size: 0.7rem;">APROBADO: Lógica Pura</span></div>
+                <div class="hex"><b>BALTHASAR-2</b> <br> <span style="font-size: 0.7rem;">APROBADO: Instinto</span></div>
+                <div class="hex"><b>CASPER-3</b> <br> <span style="font-size: 0.7rem;">APROBADO: Te amo, Venus</span></div>
+            </div>
+            <p onclick="location.reload()" style="margin-top: 30px; cursor: pointer; text-decoration: underline; font-size: 0.7rem;">CERRAR TERMINAL</p>
+        </section>
 
-        <div id="console-log">
-            <div id="log-content">> Esperando autorización...</div>
-        </div>
     </div>
+</div>
 
-    <script>
-        const logs = [
-            "Iniciando protocolos NERV...",
-            "Cargando kernel de sincronización...",
-            "Conectando con nodo Álamo, Veracruz...",
-            "Escaneando firmas de ADN...",
-            "Analizando patrón de comportamiento...",
-            "Sincronizando con servidor GitHub...",
-            "Estableciendo enlace neural..."
-        ];
+<script>
+    const world = document.getElementById('world');
 
-        let logIdx = 0;
-        function updateLogs() {
-            const container = document.getElementById('log-content');
-            container.innerHTML += `<br>> ${logs[logIdx % logs.length]}`;
-            logIdx++;
-            if(container.innerHTML.split('<br>').length > 4) {
-                container.innerHTML = container.innerHTML.split('<br>').slice(1).join('<br>');
-            }
+    function goToStats() {
+        const p = document.getElementById('pass').value.toUpperCase();
+        if(p === "V3NU5-071025") {
+            // Animación Prezi: Zoom hacia la cámara
+            world.style.transform = "translateZ(2000px) rotateY(-10deg)";
+            document.getElementById('sec-login').classList.remove('active');
+            document.getElementById('sec-stats').classList.add('active');
+            startTimer();
+        } else {
+            alert("ACCESO DENEGADO");
         }
-        setInterval(updateLogs, 2500);
+    }
 
-        function access() {
-            const p = document.getElementById('pass').value.toUpperCase();
-            if(p === "V3NU5-071025") {
-                document.getElementById('login-zone').style.display = 'none';
-                document.getElementById('core-zone').style.display = 'block';
-                document.getElementById('log-content').innerHTML = "> ACCESO CONCEDIDO.<br>> BIENVENIDA VENUS.";
-                setTimeout(() => { document.getElementById('sync-bar').style.width = "99.9%"; }, 100);
-                startTimer();
-            } else {
-                alert("ERROR: TOKEN INVÁLIDO");
-            }
-        }
+    function goToMagi() {
+        // Segundo Zoom: Más profundo
+        world.style.transform = "translateZ(4000px) rotateX(10deg)";
+        document.getElementById('sec-stats').classList.remove('active');
+        document.getElementById('sec-magi').classList.add('active');
+    }
 
-        function startTimer() {
-            const start = new Date('2025-10-07T00:00:00').getTime();
-            setInterval(() => {
-                const now = new Date().getTime();
-                const diff = now - start;
-                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
-                document.getElementById('timer').innerHTML = `${d}D:${h}H:${m}M:${s}S`;
-                // Efecto de CPU variando
-                document.getElementById('cpu-load').innerText = (99.9 + Math.random() * 0.05).toFixed(2);
-            }, 1000);
-        }
+    function startTimer() {
+        const start = new Date('2025-10-07T00:00:00').getTime();
+        setInterval(() => {
+            const now = new Date().getTime();
+            const diff = now - start;
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('timer').innerHTML = `${d}D ${h}:${m}:${s}`;
+        }, 1000);
+    }
+</script>
 
-        function runMagi() {
-            const btn = document.getElementById('query-btn');
-            btn.innerText = "PROCESANDO MATRIZ...";
-            btn.disabled = true;
-            
-            const m = ['m1', 'm2', 'm3'];
-            m.forEach((id, i) => {
-                setTimeout(() => {
-                    const el = document.getElementById(id);
-                    el.style.display = 'block';
-                    setTimeout(() => el.classList.add('show'), 50);
-                    document.getElementById('log-content').innerHTML += `<br>> MAGI_${id.toUpperCase()}_OK`;
-                }, (i + 1) * 1200);
-            });
-        }
-    </script>
 </body>
 </html>
