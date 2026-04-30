@@ -78,11 +78,15 @@
             opacity: 0;
             transition: opacity 0.45s ease, filter 0.45s ease, transform 0.45s ease;
             filter: blur(6px);
+            /* CORRECCIÓN 1: Desactiva los clics en secciones ocultas para que no bloqueen el input */
+            pointer-events: none; 
         }
 
         .section.active {
             opacity: 1 !important;
             filter: blur(0px);
+            /* CORRECCIÓN 1: Activa los clics solo en la sección visible */
+            pointer-events: auto; 
         }
 
         .box {
@@ -414,11 +418,12 @@
     function typeWriter(elementId, text, speed = 15) {
         const element = document.getElementById(elementId);
         clearTextTimers();
-        element.innerHTML = "";
+        // CORRECCIÓN 3: textContent en lugar de innerHTML es más óptimo y evita errores visuales
+        element.textContent = ""; 
         let i = 0;
         function type() {
             if (i < text.length) {
-                element.innerHTML += text.charAt(i);
+                element.textContent += text.charAt(i);
                 i++;
                 if (soundEnabled && i % 3 === 0) beep(400 + (Math.random() * 50), 0.02, 'sine', 0.01);
                 currentTextTimeouts.push(setTimeout(type, speed));
@@ -439,9 +444,13 @@
         playSequenceSound(nextId);
         shakeScreen();
 
-        // TEXTOS LARGOS Y EXPANDIDOS
         if (nextId === 2) {
             typeWriter('text-2', `Para acceder a la base de datos de sentimientos profundos, se requiere la clave de sincronización V3NU5-071025. Este código no es aleatorio; representa el punto de origen de nuestra historia y el inicio de una conexión que ha roto todos los firewalls de mi lógica habitual.`, 25);
+            // CORRECCIÓN 2: Focaliza automáticamente el input de texto tras 1.4 segundos (cuando termina de moverse la cámara 3D)
+            setTimeout(() => {
+                const passInput = document.getElementById('pass');
+                if(passInput) passInput.focus();
+            }, 1400); 
         }
         if (nextId === 3) startSync();
         if (nextId === 4) {
