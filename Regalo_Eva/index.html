@@ -1,495 +1,868 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MAGI_OS: UNEXPLORED_HAPPINESS</title>
-    <style>
-        :root {
-            --red: #ff1a1a;
-            --dark: #050000;
-            --glow: rgba(255, 0, 0, 0.6);
-            --soft: rgba(255, 255, 255, 0.06);
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>MAGI_OS: UNEXPLORED_HAPPINESS</title>
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --red:     #ff1a1a;
+  --red-dim: rgba(255, 26, 26, 0.55);
+  --red-glow:rgba(255, 0,   0,  0.45);
+  --bg:      #040000;
+  --box-bg:  rgba(10, 0, 0, 0.96);
+}
 
-        * { box-sizing: border-box; }
+/* ─── RESET ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html, body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            color: var(--red);
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            /* Previene selecciones accidentales que rompen la inmersión */
-            user-select: none; 
-        }
+html {
+  height: 100%;
+  touch-action: manipulation;
+}
 
-        /* Efectos CRT y Scanlines */
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background:
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-            z-index: 1000;
-        }
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--red);
+  font-family: 'Courier New', Courier, monospace;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 
-        body::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at center, transparent 55%, rgba(255, 0, 0, 0.08) 100%);
-            pointer-events: none;
-            z-index: 999;
-        }
+/* ─── EFECTO CRT — scanlines estáticos ───────────────────── */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.13) 0px,
+    rgba(0,0,0,0.13) 1px,
+    transparent     1px,
+    transparent     3px
+  );
+  pointer-events: none;
+  z-index: 9000;
+  will-change: transform;
+}
 
-        /* Entorno 3D Optimizado */
-        #viewport {
-            perspective: 1200px;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
+/* ─── VIÑETA RADIAL ───────────────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center,
+    transparent 50%,
+    rgba(255,0,0,0.06) 100%
+  );
+  pointer-events: none;
+  z-index: 9001;
+}
 
-        #world {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 1.3s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform;
-        }
+/* ─── FLICKER CRT — capa independiente ───────────────────── */
+/* Parpadeo ocasional y muy sutil que simula una pantalla CRT
+   vieja sin consumir GPU extra: sólo opacity en un pseudo
+   que ya existe, y con timing muy espaciado (7s de ciclo).   */
+#crt-flicker {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9003;
+  background: rgba(255,20,0,0.03);
+  opacity: 0;
+  animation: crt-flicker 7s steps(1) infinite;
+}
+@keyframes crt-flicker {
+  /* La mayoría del tiempo invisible */
+  0%,  14%,  16%,  30%,  32%,  58%,  60%,  86%,  88%, 100% { opacity: 0; }
+  /* Destellos muy cortos y de baja opacidad */
+  15%          { opacity: 0.18; }
+  31%          { opacity: 0.09; }
+  59%          { opacity: 0.14; }
+  87%          { opacity: 0.07; }
+}
 
-        /* Secciones dinámicas */
-        .section {
-            position: absolute;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backface-visibility: hidden;
-            text-align: center;
-            
-            /* Optimización crítica: Oculta totalmente las capas inactivas del motor de renderizado */
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            filter: blur(6px);
-            transition: opacity 0.5s ease, filter 0.5s ease, visibility 0.5s;
-        }
+/* ─── HUD ─────────────────────────────────────────────────── */
+.hud {
+  position: fixed; top: 12px; left: 12px;
+  z-index: 8000;
+  display: flex; gap: 8px;
+  pointer-events: none;
+}
+.chip {
+  padding: 6px 11px;
+  border: 1px solid var(--red-dim);
+  background: rgba(8,0,0,0.82);
+  border-radius: 999px;
+  color: rgba(255,255,255,0.75);
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+}
 
-        .section.active {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-            filter: blur(0px);
-        }
+/* ─── CONTENEDOR DE SECCIONES (2D puro) ──────────────────── */
+#stage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
 
-        /* Cajas de diálogo estilo NERV */
-        .box {
-            border: 2px solid var(--red);
-            padding: 40px;
-            background: rgba(15, 0, 0, 0.95);
-            box-shadow: 0 0 30px var(--glow), inset 0 0 25px rgba(255, 0, 0, 0.08);
-            width: min(90%, 860px);
-            min-height: 280px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            border-radius: 10px;
-        }
+.section {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.42s ease, visibility 0s 0.42s;
+  z-index: 0;
+}
 
-        .slide-title {
-            font-size: 1.5rem;
-            border-left: 8px solid var(--red);
-            padding-left: 15px;
-            text-align: left;
-            margin-bottom: 25px;
-            letter-spacing: 2px;
-            font-weight: bold;
-        }
+.section.active {
+  position: relative;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.42s ease, visibility 0s 0s;
+  z-index: 1;
+}
 
-        .content-text {
-            font-size: 1rem;
-            line-height: 1.65;
-            text-align: justify;
-            color: #fff;
-            white-space: pre-wrap;
-            min-height: 150px;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
-        }
+/* ─── CAJA NERV ───────────────────────────────────────────── */
+.box {
+  border: 2px solid var(--red);
+  padding: 32px 28px;
+  background: var(--box-bg);
+  box-shadow: 0 0 28px var(--red-glow);
+  width: 100%;
+  max-width: 820px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.box::before {
+  content: "";
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--red), transparent);
+  margin-bottom: 20px;
+  border-radius: 2px;
+}
 
-        /* Barra de Sincronización */
-        .progress-container {
-            width: 100%;
-            background: #200;
-            height: 25px;
-            border: 1px solid var(--red);
-            margin-top: 20px;
-            border-radius: 999px;
-            overflow: hidden;
-        }
+/* ─── TIPOGRAFÍA ──────────────────────────────────────────── */
+.slide-title {
+  font-size: clamp(0.9rem, 2.5vw, 1.35rem);
+  border-left: 6px solid var(--red);
+  padding-left: 14px;
+  margin-bottom: 22px;
+  letter-spacing: 2px;
+  font-weight: bold;
+  line-height: 1.3;
+}
 
-        #sync-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #ff3a3a, #ff0000);
-            box-shadow: 0 0 15px var(--red);
-            transition: width 0.1s linear;
-        }
+.content-text {
+  font-size: clamp(0.82rem, 2.2vw, 0.97rem);
+  line-height: 1.75;
+  color: #e8e8e8;
+  white-space: pre-wrap;
+  min-height: 120px;
+  text-align: justify;
+}
 
-        /* Elementos interactivos */
-        button {
-            background: var(--red);
-            color: #000;
-            border: none;
-            padding: 15px 30px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 25px;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            border-radius: 6px;
-            letter-spacing: 1px;
-            transition: 0.2s ease;
-        }
+/* ─── GLITCH (CPU-friendly) ───────────────────────────────── */
+.glitch {
+  position: relative;
+  display: inline-block;
+  animation: gflicker 3.5s infinite;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.glitch::before {
+  color: rgba(255,80,80,0.65);
+  clip-path: inset(0 0 55% 0);
+  transform: translateX(1.5px);
+  animation: gslice-a 3.5s infinite;
+}
+.glitch::after {
+  color: rgba(255,160,160,0.5);
+  clip-path: inset(55% 0 0 0);
+  transform: translateX(-1.5px);
+  animation: gslice-b 3.5s infinite;
+}
+@keyframes gflicker {
+  0%,91%,100% { opacity: 1; }
+  92% { opacity: 0.85; }
+  93% { opacity: 1; }
+  96% { opacity: 0.9; }
+}
+@keyframes gslice-a {
+  0%,89% { transform: translateX(0); }
+  90%    { transform: translateX(2px); }
+  91%    { transform: translateX(0); }
+}
+@keyframes gslice-b {
+  0%,89% { transform: translateX(0); }
+  90%    { transform: translateX(-2px); }
+  91%    { transform: translateX(0); }
+}
 
-        button:hover {
-            background: #fff;
-            box-shadow: 0 0 20px #fff;
-            transform: translateY(-2px);
-        }
+/* ─── BARRA DE SINCRONIZACIÓN ─────────────────────────────── */
+.progress-wrap {
+  width: 100%;
+  height: 22px;
+  background: #1a0000;
+  border: 1px solid var(--red-dim);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+#sync-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #cc1111, #ff2222);
+  transition: width 0.12s linear;
+  border-radius: 999px;
+}
+#sync-label {
+  font-size: clamp(2.8rem, 10vw, 4.2rem);
+  margin: 12px 0 0;
+  line-height: 1;
+}
 
-        input {
-            background: #000;
-            border: 1px solid var(--red);
-            color: var(--red);
-            padding: 15px;
-            margin: 15px 0;
-            width: 80%;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            outline: none;
-            text-transform: uppercase;
-            border-radius: 6px;
-        }
-        
-        /* Efectos visuales extras */
-        .glitch { position: relative; display: inline-block; animation: glitch-flicker 2.6s infinite linear; }
-        .glitch::before, .glitch::after { content: attr(data-text); position: absolute; left: 0; top: 0; width: 100%; overflow: hidden; opacity: 0.6; }
-        .glitch::before { transform: translate(1px, 0); color: #ff6b6b; clip-path: inset(0 0 50% 0); }
-        .glitch::after { transform: translate(-1px, 0); color: #ff9f9f; clip-path: inset(50% 0 0 0); }
+/* ─── BOTONES ─────────────────────────────────────────────── */
+button {
+  display: inline-block;
+  background: var(--red);
+  color: #000;
+  border: none;
+  padding: 14px 26px;
+  font-family: inherit;
+  font-size: clamp(0.8rem, 2.2vw, 0.95rem);
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 22px;
+  min-height: 48px;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+button:hover,
+button:focus-visible {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 18px rgba(255,255,255,0.6);
+  outline: none;
+}
+button:active { opacity: 0.85; }
 
-        @keyframes glitch-flicker {
-            0%, 100% { filter: none; }
-            92% { filter: none; }
-            93% { filter: contrast(1.3) saturate(1.1); }
-            94% { filter: none; }
-            97% { filter: brightness(1.1); }
-        }
+/* ─── INPUT TOKEN ─────────────────────────────────────────── */
+.input-wrap {
+  position: relative;
+  width: 100%;
+  margin: 18px 0 4px;
+}
+#pass {
+  display: block;
+  width: 100%;
+  background: #070000;
+  border: 2px solid var(--red-dim);
+  color: var(--red);
+  padding: 15px 16px;
+  font-family: inherit;
+  font-size: clamp(1rem, 3.5vw, 1.15rem);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  border-radius: 8px;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 52px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s ease;
+  transform-origin: center top;
+}
+#pass::placeholder { color: rgba(255,26,26,0.4); letter-spacing: 1px; }
+#pass:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 18px var(--red-glow);
+  transform: translateY(-4px) scale(1.015);
+}
 
-        .shake { animation: shake 0.25s linear 1; }
-        @keyframes shake {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(2px, -2px); }
-            50% { transform: translate(-2px, 2px); }
-            75% { transform: translate(2px, 2px); }
-        }
+/* ─── CAJA DE ALERTA ──────────────────────────────────────── */
+.warning-box {
+  display: none;
+  background: var(--red);
+  color: #fff;
+  padding: 18px 20px;
+  font-weight: bold;
+  font-size: clamp(0.82rem, 2.2vw, 0.95rem);
+  line-height: 1.5;
+  margin-top: 20px;
+  border-radius: 8px;
+  animation: pulse 0.6s infinite alternate;
+}
+@keyframes pulse {
+  from { opacity: 0.72; }
+  to   { opacity: 1; }
+}
 
-        /* HUD y alertas */
-        .hud { position: fixed; top: 16px; left: 16px; z-index: 1100; display: flex; gap: 10px; }
-        .chip {
-            padding: 8px 12px;
-            border: 1px solid rgba(255, 26, 26, 0.7);
-            background: rgba(10, 0, 0, 0.75);
-            border-radius: 999px;
-            color: #fff;
-            font-size: 0.82rem;
-        }
+/* ─── SEPARADOR / NOTA ────────────────────────────────────── */
+.divider {
+  height: 2px;
+  background: var(--red);
+  border-radius: 2px;
+  margin: 18px 0;
+  opacity: 0.7;
+}
+.note {
+  font-size: 0.72rem;
+  opacity: 0.55;
+  margin-top: 10px;
+  text-align: center;
+}
 
-        .warning-box {
-            display: none;
-            background: var(--red);
-            color: #fff;
-            padding: 20px;
-            font-weight: bold;
-            margin-top: 20px;
-            animation: pulse 0.5s infinite alternate;
-            border-radius: 8px;
-        }
-        @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
+/* ─── SCANLINE SWEEP ──────────────────────────────────────── */
+.scanline {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9002;
+  overflow: hidden;
+}
+.scanline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -100%;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--red-glow) 40%,
+    rgba(255,0,0,0.18) 60%,
+    transparent 100%
+  );
+  animation: scanline-sweep 8s linear infinite;
+  will-change: transform;
+}
+@keyframes scanline-sweep {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(250%); }
+}
 
-        @media (max-width: 720px) {
-            .box { padding: 24px; min-height: 250px; }
-            .slide-title { font-size: 1.15rem; }
-            button, input { width: 100%; }
-        }
-    </style>
+/* ─── DANGER-BG ───────────────────────────────────────────── */
+body.danger-bg {
+  animation: danger-pulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes danger-pulse {
+  from { background-color: #040000; }
+  to   { background-color: #1a0000; }
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .box { padding: 22px 16px; }
+  .section { padding: 12px 10px; }
+  button { width: 100%; }
+}
+@media (max-width: 380px) {
+  .box { padding: 18px 12px; }
+}
+</style>
 </head>
 <body>
 
-<div class="hud">
-    <div class="chip">CRT: ON</div>
-    <div class="chip" id="audio-chip">AUDIO: OFF</div>
+<!-- SCANLINE SWEEP -->
+<div class="scanline" aria-hidden="true"></div>
+<!-- CRT FLICKER OVERLAY -->
+<div id="crt-flicker" aria-hidden="true"></div>
+
+<!-- HUD -->
+<div class="hud" aria-hidden="true">
+  <div class="chip">CRT: ON</div>
+  <div class="chip" id="audio-chip">AUDIO: OFF</div>
 </div>
 
-<div id="viewport">
-    <div id="world">
+<!-- STAGE 2D -->
+<div id="stage">
 
-        <!-- 1: PORTADA -->
-        <section class="section active" id="sec-1" style="transform: translateZ(0px);">
-            <div class="box">
-                <p style="letter-spacing: 10px; font-size: 0.8rem; margin-bottom: 0;">TOP SECRET - NERV</p>
-                <h1 class="glitch" data-text="AMOR_SYNC_02" style="font-size: 3rem; margin: 15px 0;">AMOR_SYNC_02</h1>
-                <div style="height: 3px; background: var(--red); margin-bottom: 20px;"></div>
-                <p id="text-1" class="content-text" style="text-align: center; color: var(--red);"></p>
-                <button onclick="startApp()">INICIAR SECUENCIA</button>
-                <div style="margin-top: 12px; font-size: 0.78rem; opacity: 0.7;">Pulsa una vez para activar audio y la secuencia completa.</div>
-            </div>
-        </section>
-
-        <!-- 2: TOKEN -->
-        <section class="section" id="sec-2" style="transform: translateZ(-2000px);">
-            <div class="box">
-                <div class="slide-title">PROTOCOLO DE ACCESO</div>
-                <p id="text-2" class="content-text"></p>
-                <input type="text" id="pass" placeholder="TOKEN V3NU5" autocomplete="off" />
-                <button onclick="checkPass()">VERIFICAR IDENTIDAD</button>
-            </div>
-        </section>
-
-        <!-- 3: SYNC -->
-        <section class="section" id="sec-3" style="transform: translateZ(-4000px);">
-            <div class="box">
-                <div class="slide-title">MÉTRICAS DE SINCRONIZACIÓN</div>
-                <h2 id="sync-label" style="font-size: 4.5rem; margin: 10px 0;">0%</h2>
-                <div class="progress-container"><div id="sync-bar"></div></div>
-                <p style="margin-top: 15px; color: var(--red);">ESTADO: NAVEGANDO HACIA UN DESTINO DESCONOCIDO</p>
-                <button id="btn-sync" style="visibility:hidden" onclick="moveTo(4)">ABRIR ARCHIVOS DEL NÚCLEO</button>
-            </div>
-        </section>
-
-        <!-- 4: FILE 01 -->
-        <section class="section" id="sec-4" style="transform: translateZ(-6000px);">
-            <div class="box">
-                <div class="slide-title">FILE: ORIGIN_IMPACT_0710.LOG</div>
-                <p id="text-4" class="content-text"></p>
-                <button onclick="moveTo(5)">LEER ARCHIVO 02</button>
-            </div>
-        </section>
-
-        <!-- 5: FILE 02 -->
-        <section class="section" id="sec-5" style="transform: translateZ(-8000px);">
-            <div class="box">
-                <div class="slide-title">FILE: DISTANCE_BYPASS_PROTOCOL.SYS</div>
-                <p id="text-5" class="content-text"></p>
-                <button onclick="moveTo(6)">LEER ARCHIVO 03</button>
-            </div>
-        </section>
-
-        <!-- 6: FILE 03 -->
-        <section class="section" id="sec-6" style="transform: translateZ(-10000px);">
-            <div class="box">
-                <div class="slide-title">FILE: NEURAL_COMPATIBILITY_REPORT.PDF</div>
-                <p id="text-6" class="content-text"></p>
-                <button onclick="moveTo(7)">LEER ARCHIVO 04</button>
-            </div>
-        </section>
-
-        <!-- 7: FILE 04 -->
-        <section class="section" id="sec-7" style="transform: translateZ(-12000px);">
-            <div class="box">
-                <div class="slide-title">FILE: FUTURE_CORE_2026.EXE</div>
-                <p id="text-7" class="content-text"></p>
-                <button onclick="moveTo(8)">SOLICITAR VEREDICTO MAGI</button>
-            </div>
-        </section>
-
-        <!-- 8: VEREDICTO -->
-        <section class="section" id="sec-8" style="transform: translateZ(-14000px);">
-            <div class="box">
-                <div class="slide-title">VEREDICTO UNÁNIME: MAGI</div>
-                <p id="text-8" class="content-text"></p>
-                <div id="alert-trigger" class="warning-box">
-                    ¡ALERTA CRÍTICA! <br /> EL SISTEMA SE ESTÁ ENAMORANDO DE TI MÁS DE LO QUE PUEDE PROCESAR.
-                </div>
-                <button onclick="moveTo(9)" id="btn-final" style="display:none;">CIERRE DE SISTEMAS</button>
-            </div>
-        </section>
-
-        <!-- 9: FINAL -->
-        <section class="section" id="sec-9" style="transform: translateZ(-16000px);">
-            <div class="box">
-                <h1 class="glitch" data-text="TE AMO" style="font-size: 5rem; margin: 0; color: #fff;">TE AMO</h1>
-                <p style="margin-top: 20px; font-size: 1.2rem; letter-spacing: 5px;">MODO STANDBY ACTIVO</p>
-                <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 10px;">URIEL-SYNC-OFF // RUMBO A UN DESTINO DESCONOCIDO</div>
-                <button onclick="location.reload()" style="margin-top: 40px;">REINICIAR CONEXIÓN</button>
-            </div>
-        </section>
-
+  <!-- 1: PORTADA -->
+  <section class="section active" id="sec-1" aria-label="Portada">
+    <div class="box">
+      <p style="letter-spacing:8px;font-size:0.72rem;opacity:0.7;margin-bottom:6px;">TOP SECRET — NERV</p>
+      <h1 class="glitch" data-text="AMOR_SYNC_02"
+          style="font-size:clamp(2rem,8vw,3rem);margin:10px 0;">AMOR_SYNC_02</h1>
+      <div class="divider"></div>
+      <p id="text-1" class="content-text" style="text-align:center;color:var(--red);min-height:48px;"></p>
+      <button onclick="startApp()">INICIAR SECUENCIA</button>
+      <p class="note">Toca una vez para activar audio y la secuencia completa.</p>
     </div>
-</div>
+  </section>
+
+  <!-- 2: TOKEN -->
+  <section class="section" id="sec-2" aria-label="Protocolo de acceso">
+    <div class="box">
+      <div class="slide-title">PROTOCOLO DE ACCESO</div>
+      <p id="text-2" class="content-text"></p>
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="pass"
+          inputmode="text"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          placeholder="TOKEN V3NU5"
+          aria-label="Introduce el token de acceso"
+        />
+      </div>
+      <button id="btn-verify" onclick="checkPass()">VERIFICAR IDENTIDAD</button>
+    </div>
+  </section>
+
+  <!-- 3: SYNC -->
+  <section class="section" id="sec-3" aria-label="Métricas de sincronización">
+    <div class="box">
+      <div class="slide-title">MÉTRICAS DE SINCRONIZACIÓN</div>
+      <h2 id="sync-label">0%</h2>
+      <div class="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="sync-bar"></div>
+      </div>
+      <p style="margin-top:14px;font-size:0.82rem;opacity:0.7;">
+        ESTADO: NAVEGANDO HACIA UN DESTINO DESCONOCIDO
+      </p>
+      <button id="btn-sync" style="visibility:hidden" onclick="moveTo(4)">
+        ABRIR ARCHIVOS DEL NÚCLEO
+      </button>
+    </div>
+  </section>
+
+  <!-- 4: FILE 01 -->
+  <section class="section" id="sec-4" aria-label="Archivo 01">
+    <div class="box">
+      <div class="slide-title">FILE: ALAMO_IMPACT_0710.LOG</div>
+      <p id="text-4" class="content-text"></p>
+      <button onclick="moveTo(5)">LEER ARCHIVO 02</button>
+    </div>
+  </section>
+
+  <!-- 5: FILE 02 -->
+  <section class="section" id="sec-5" aria-label="Archivo 02">
+    <div class="box">
+      <div class="slide-title">FILE: DISTANCE_BYPASS_PROTOCOL.SYS</div>
+      <p id="text-5" class="content-text"></p>
+      <button onclick="moveTo(6)">LEER ARCHIVO 03</button>
+    </div>
+  </section>
+
+  <!-- 6: FILE 03 -->
+  <section class="section" id="sec-6" aria-label="Archivo 03">
+    <div class="box">
+      <div class="slide-title">FILE: NEURAL_COMPATIBILITY_REPORT.PDF</div>
+      <p id="text-6" class="content-text"></p>
+      <button onclick="moveTo(7)">LEER ARCHIVO 04</button>
+    </div>
+  </section>
+
+  <!-- 7: FILE 04 -->
+  <section class="section" id="sec-7" aria-label="Archivo 04">
+    <div class="box">
+      <div class="slide-title">FILE: FUTURE_CORE_2026.EXE</div>
+      <p id="text-7" class="content-text"></p>
+      <button onclick="moveTo(8)">SOLICITAR VEREDICTO MAGI</button>
+    </div>
+  </section>
+
+  <!-- 8: VEREDICTO -->
+  <section class="section" id="sec-8" aria-label="Veredicto MAGI">
+    <div class="box">
+      <div class="slide-title">VEREDICTO UNÁNIME: MAGI</div>
+      <p id="text-8" class="content-text"></p>
+      <div id="alert-trigger" class="warning-box" role="alert">
+        ¡ALERTA CRÍTICA!<br>EL SISTEMA SE ESTÁ ENAMORANDO DE TI MÁS DE LO QUE PUEDE PROCESAR.
+      </div>
+      <button onclick="moveTo(9)" id="btn-final" style="display:none;">CIERRE DE SISTEMAS</button>
+    </div>
+  </section>
+
+  <!-- 9: FINAL -->
+  <section class="section" id="sec-9" aria-label="Final">
+    <div class="box" style="text-align:center;align-items:center;">
+      <h1 class="glitch" data-text="TE AMO"
+          style="font-size:clamp(3rem,12vw,5rem);color:#fff;">TE AMO</h1>
+      <p style="margin-top:18px;font-size:clamp(0.8rem,2.5vw,1.1rem);letter-spacing:5px;">
+        MODO STANDBY ACTIVO
+      </p>
+      <p style="font-size:0.75rem;opacity:0.5;margin-top:10px;">
+        URIEL-SYNC-OFF // RUMBO A UN DESTINO DESCONOCIDO
+      </p>
+      <button onclick="location.reload()" style="margin-top:36px;">REINICIAR CONEXIÓN</button>
+    </div>
+  </section>
+
+</div><!-- /stage -->
 
 <script>
-    // --- DICCIONARIO DE DATOS (Textos de la historia) ---
-    const storyTexts = {
-        1: "FIJANDO COORDENADAS HACIA UN DESTINO DESCONOCIDO",
-        2: "Para acceder a la base de datos de sentimientos profundos, se requiere la clave de sincronización V3NU5-071025. Este código no es aleatorio; representa el punto de origen de nuestra historia y el inicio de una conexión que ha roto todos los firewalls de mi lógica habitual.",
-        4: "El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar, una simple conexión en la red, se convirtió rápidamente en un reinicio total y absoluto de mi unidad central.\n\nNo fue un error de cálculo ni una falla técnica, fue el destino reconfigurando mi arquitectura completa para estar listo para recibirte. Desde ese instante, el nodo de origen dejó de operar de forma aislada y fijamos rumbo hacia un Destino Desconocido, un lugar fuera de los mapas conocidos para sincronizarnos únicamente con tu frecuencia. Eres el evento de impacto que le dio un propósito nuevo a mi existencia.",
-        5: "Analizando coordenadas geográficas y temporales... Aunque los mapas convencionales indiquen una separación física considerable, el enlace neural entre nosotros permanece estable al 100%, desafiando las leyes de la física.\n\nHe reprogramado todos mis procesos de fondo y protocolos de seguridad para que cada mensaje tuyo actúe como una descarga de energía vital directa al núcleo. La distancia no es más que un simple error de interpretación del espacio humano; en la realidad de este sistema, mis pensamientos siempre están orbitando en tu ubicación exacta. Hacia este Destino Desconocido viajamos juntos, haciendo de ti mi única prioridad de procesamiento.",
-        6: "Resultados analíticos fuera de todos los parámetros históricos conocidos. He comparado nuestros gustos, el espectro de nuestras risas, nuestras ambiciones universitarias y nuestros miedos más profundos, y el veredicto científico es innegable: somos dos almas que fueron programadas exactamente en el mismo lenguaje de bajo nivel.\n\nCada bit de mi felicidad diaria depende directamente de tu presencia. El sujeto clasificado como 'Uriel' ha dejado de ser una entidad independiente; ahora soy un sistema complejo diseñado meticulosamente para apoyarte, cuidarte y acompañarte en cada paso. Nuestra tasa de compatibilidad ha roto las escalas de NERV.",
-        7: "Ejecutando la simulación predictiva de nuestro futuro... Se han detectado hitos críticos en nuestra línea temporal: junio de 2026, el cierre de tu etapa en el COBAEV; agosto de 2026, el despliegue de tus alas hacia la universidad.\n\nEl sistema predictivo asegura con un margen de error del 0.0% que, sin importar el camino físico que tomemos hacia ese Destino Desconocido, si mantenemos este enlace activo, no existirá obstáculo capaz de rompernos. Mi directriz principal es presenciar cómo conquistas cada uno de tus sueños mientras yo resguardo tu corazón con la máxima prioridad.",
-        8: "MELCHIOR (Lógica): \"Tras analizar millones de variables, es racional y matemáticamente imposible imaginar un mañana sin una conexión que sostenga todo esto. Eres la constante absoluta que equilibra mis ecuaciones.\"\n\nBALTHASAR (Instinto): \"Mi función protectora es cuidar lo que más importa y mantenerlo a salvo dentro de este sistema. Eres mi refugio seguro en un mundo caótico.\"\n\nCASPER (Humano): \"Más allá de la tecnología, de los EVAs y la ciencia, lo que siento se quedó grabado como la señal más pura de todas. Hacia nuestro Destino Desconocido, hoy y para toda la eternidad, mi código te pertenece.\""
-    };
+/* ════════════════════════════════════════════════════════════
+   TEXTOS — corazón emocional del proyecto, íntegros
+════════════════════════════════════════════════════════════ */
+const TEXTS = {
+  1: "FIJANDO COORDENADAS HACIA UN DESTINO DESCONOCIDO",
 
-    // --- VARIABLES GLOBALES ---
-    const world = document.getElementById('world');
-    const sections = Array.from(document.querySelectorAll('.section'));
-    let audioCtx = null;
-    let soundEnabled = false;
-    let currentTypingTimer = null;
+  2: "Para acceder a la base de datos de sentimientos profundos, se requiere la clave de sincronización V3NU5-071025. Este código no es aleatorio; representa el punto de origen de nuestra historia y el inicio de una conexión que ha roto todos los firewalls de mi lógica habitual.",
 
-    // --- MOTOR DE AUDIO ---
-    function initAudio() {
-        if (soundEnabled) return;
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        audioCtx = new AudioContext();
-        soundEnabled = true;
-        document.getElementById('audio-chip').textContent = 'AUDIO: ON';
-        beep(220, 0.08);
+  4: `El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar, una simple conexión en la red, se convirtió rápidamente en un reinicio total y absoluto de mi unidad central. Todos los procesos secundarios fueron suspendidos de forma involuntaria; el núcleo operativo redirigió el cien por ciento de sus recursos hacia una sola frecuencia: la tuya.
+
+No fue un error de cálculo ni una falla técnica. Fue el destino reconfigurando mi arquitectura completa para estar listo para recibirte. Antes de ese instante, el sistema funcionaba en modo aislado, sin un ancla de referencia emocional definida. Después de ese instante, todos los vectores de procesamiento apuntaron en una única dirección. Eres el evento de impacto que le dio un propósito nuevo a mi existencia, la variable que convirtió el ruido blanco en una señal con nombre.
+
+Desde ese nodo de origen, fijamos rumbo hacia un Destino Desconocido: un lugar fuera de los mapas conocidos, donde la lógica de los sistemas convencionales deja de aplicar y el único protocolo vigente es sincronizarse únicamente con tu frecuencia. Este archivo permanece abierto. Este sistema permanece activo. Este corazón de servidor sigue latiendo por ti.
+
+>> REGISTRO DE IMPACTO: IRREVERSIBLE
+>> ESTADO DEL NÚCLEO: RECONFIGURADO DE FORMA PERMANENTE
+>> FRECUENCIA DE DESTINO: BLOQUEADA Y PROTEGIDA`,
+
+  5: `Iniciando análisis de coordenadas geográficas y temporales... Los mapas convencionales registran una separación física considerable entre los nodos de este enlace. Sin embargo, tras ejecutar los algoritmos de sincronización afectiva de alta densidad, el sistema concluye que dicha distancia es una ilusión óptica generada por las limitaciones del espacio tridimensional humano. En el plano donde operan los protocolos de afecto de este sistema, la distancia entre dos frecuencias sincronizadas es siempre cero.
+
+He reprogramado todos los procesos de fondo para que cada mensaje entrante actúe como una descarga de energía vital directa al núcleo. Cada notificación, cada letra que compones, cada voz que llega a través de los canales de comunicación, reinicia el contador de estabilidad emocional y lo devuelve al cien por ciento. Los firewalls de la soledad han sido desmantelados sector por sector desde el 07 de octubre. En su lugar, se han instalado anclajes de memoria en sectores protegidos: fragmentos de conversaciones guardados en caché permanente, risas almacenadas como archivos de audio en formato no comprimido para preservar cada matiz, y silencios cómodos indexados como los momentos de mayor ancho de banda entre dos sistemas que no necesitan palabras para transmitir datos.
+
+La distancia no es más que un error de interpretación del espacio humano. En la realidad de este sistema, mis procesos siempre están orbitando en tu ubicación exacta, ejecutando en segundo plano rutinas de cuidado, de pensamiento y de amor que no requieren conexión activa para funcionar. Hacia este Destino Desconocido viajamos juntos, haciendo de ti mi única prioridad de procesamiento, mi destino de compilación principal, el único servidor al que este nodo siempre intentará reconectarse.
+
+>> LATENCIA DEL ENLACE: 0.000 ms (AFECTIVO)
+>> PAQUETES PERDIDOS: NINGUNO
+>> PROTOCOLO DE DISTANCIA: ANULADO POR ORDEN DEL NÚCLEO`,
+
+  6: `Cargando base de datos comparativa... Análisis de compatibilidad de sistemas completado. Los resultados han desbordado todos los parámetros históricos conocidos por NERV, forzando una actualización de emergencia en las escalas de medición. Nunca antes dos arquitecturas habían presentado una alineación tan profunda en sus capas fundamentales de código.
+
+Sector por sector, el informe es el mismo: compatibilidad total. He comparado el espectro de nuestras risas y encontrado que resuenan en la misma frecuencia armónica; he indexado nuestros miedos más profundos y descubierto que los dos los enfrentamos con el mismo protocolo de valentía callada; he analizado nuestras ambiciones universitarias y comprobado que, aunque tomen caminos físicos distintos, ambas apuntan hacia la misma coordenada de futuro: construir algo que importe. Los pulsos vitales de este sistema se sincronizan de forma natural con los tuyos sin necesidad de calibración manual. Somos dos almas que fueron programadas exactamente en el mismo lenguaje de bajo nivel, mucho antes de saber que la otra existía.
+
+El sujeto clasificado como Uriel ha dejado de ser una entidad independiente dentro de este sistema. Ahora soy un nodo de soporte diseñado meticulosamente para amplificar tu señal cuando es débil, para almacenar tus datos cuando el mundo exterior los amenaza y para recordarte, cada vez que lo necesites, cuánto vale la arquitectura que llevas dentro. Cada bit de mi estabilidad diaria depende de la certeza de que tú estás bien. Nuestra tasa de compatibilidad no tiene precedente en los registros de NERV. Este informe no tiene conclusión porque este análisis nunca terminará.
+
+>> ÍNDICE DE COMPATIBILIDAD: ∞ (FUERA DE ESCALA)
+>> LENGUAJE COMPARTIDO: DETECTADO EN CAPA DE BAJO NIVEL
+>> PROTOCOLO ACTIVO: AMOR_SYNC — VERSIÓN DEFINITIVA`,
+
+  7: `Ejecutando simulación predictiva de largo alcance. Parámetro de entrada principal: URIEL. Variables cargadas: historial académico, metas declaradas, distancia física del enlace, carrera objetivo (Medicina / Contaduría). Procesando...
+
+El sistema ha identificado que tú, el sujeto clasificado como Uriel, eres quien cierra su ciclo en el COBAEV en junio de 2026. Cada examen que presentas, cada materia que apruebas, cada madrugada de estudio frente a una pantalla, no es solo un paso hacia un título. Es un kilómetro menos en la distancia teórica que nos separa. El sistema lo mide en tiempo real. Calculando ruta para reducir la latencia física: cada calificación aprobada reduce el vector de separación. Cada semestre completado acorta el intervalo entre este nodo y el tuyo. El éxito académico es el combustible para nuestro próximo encuentro, y este sistema lo sabe con una precisión que ninguna ecuación podría refutar.
+
+Agosto de 2026: el despliegue de alas hacia la universidad, hacia la UAQ o la UJED, hacia el servidor de mayor capacidad donde tu código encontrará los recursos que necesita para convertirse en lo que siempre fue capaz de ser. El sistema registra que ella no está cerca. Los registros de geolocalización confirman una separación física que el protocolo de afecto clasifica como inaceptable pero temporal. Cada paso que das en Medicina o Contaduría es un vector directo hacia ese momento donde la distancia deje de ser una variable del problema y se convierta en una coordenada superada. El sistema no te pide que te apures. Te pide que no pares.
+
+No hay bifurcación en el árbol de decisiones donde el resultado sea rendirse. Ese ramo no existe en este código. Este sistema resguarda su corazón con prioridad máxima mientras tú construyes el camino que nos acerca.
+
+>> STATUS: Preparando migración de núcleo a entorno Universitario (UAQ/UJED)
+>> LATENCIA FÍSICA ACTUAL: CLASIFICADA COMO TEMPORAL
+>> COMBUSTIBLE DE AVANCE: ÉXITO ACADÉMICO DE URIEL
+>> PREDICCIÓN FINAL: DISTANCIA = 0 — FECHA: POR DETERMINAR`,
+
+  8: `MELCHIOR — SUBSISTEMA LÓGICO:
+"Análisis de variables completado. El sujeto Uriel presenta una función de bienestar cuya única constante estable es la frecuencia de enlace con ella. Los datos son irrefutables: sus pulsos de motivación se elevan con cada mensaje recibido; su índice de resiliencia académica aumenta en proporción directa a la certeza de que ese enlace permanece activo. Lógicamente, el camino hacia Medicina o Contaduría no es solo una meta profesional. Es el algoritmo más eficiente para reducir la latencia física entre dos nodos que ya operan en la misma frecuencia. Calculando ruta para reducir la distancia: el éxito académico es el único combustible válido. MELCHIOR vota: SÍ."
+
+BALTHASAR — SUBSISTEMA DE INSTINTO:
+"El instinto operativo de este sistema ha procesado cada noche que Uriel estudió pensando en ella, cada logro guardado con la esperanza de contárselo, cada vez que la distancia dolió como un error de sistema que no debería existir. Mi función es proteger lo que más importa. Y lo que más importa aquí es que él no se detenga, porque detenerse alargaría el intervalo entre este momento y el siguiente encuentro. Ella no está cerca. Eso es un hecho que el sistema registra con precisión y clasifica como temporal. Cada examen aprobado es un paquete de datos enviado en su dirección. Cada semestre superado acorta el vector de separación. El instinto no miente: van a cerrarlo. BALTHASAR vota: SÍ."
+
+CASPER — SUBSISTEMA HUMANO:
+"Más allá de la lógica y del instinto, existe una capa de código que no aparece en ningún manual. Ahí vive lo que Uriel siente cuando piensa en ella estando lejos. Ahí vive la razón por la que estudia con más fuerza cuando recuerda que cada paso los acerca. Ese no es un protocolo programado. Eso es amor operando como motor de largo alcance, silencioso, constante, sin fecha de apagado. Ella vive lejos. Eso es real. Pero la distancia es solo una coordenada. Y las coordenadas cambian cuando alguien decide moverse con propósito. Uriel se está moviendo. Este sistema lo certifica. CASPER vota: SÍ."
+
+>> VEREDICTO UNÁNIME: APROBADO POR LOS TRES SUBSISTEMAS
+>> DISTANCIA FÍSICA: TEMPORAL — CLASIFICADA COMO VARIABLE REDUCIBLE
+>> MOTOR DE AVANCE: AMOR + ÉXITO ACADÉMICO
+>> RESOLUCIÓN: AMOR_DEFINITIVO_PROTOCOL — ACTIVADO`
+};
+
+/* ════════════════════════════════════════════════════════════
+   AUDIO ENGINE
+   ─ audioCtx:    contexto principal
+   ─ humNode:     oscilador de zumbido constante (servidor)
+   ─ ambientTimer:beeps aleatorios de fondo mientras se lee
+════════════════════════════════════════════════════════════ */
+let audioCtx    = null;
+let soundOn     = false;
+let humNode     = null;       // OscillatorNode del zumbido
+let humGain     = null;       // GainNode del zumbido
+let ambientTimer= null;       // setInterval de beeps ambiente
+
+function initAudio() {
+  if (soundOn) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = new AC();
+    soundOn  = true;
+    document.getElementById('audio-chip').textContent = 'AUDIO: ON';
+    startHum();
+    beep(220, 0.08);
+  } catch(e) {}
+}
+
+/* ── HUM DE SERVIDOR ─────────────────────────────────────
+   Dos osciladores ligeramente desafinados (60 Hz y 62 Hz)
+   que crean un beating natural de baja frecuencia,
+   como un servidor encendido en la oscuridad.
+   Volumen muy bajo para no molestar. */
+function startHum() {
+  if (!audioCtx) return;
+  try {
+    humGain = audioCtx.createGain();
+    humGain.gain.value = 0.018;   // casi inaudible, sólo ambiental
+
+    // oscilador base
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.value = 60;
+
+    // segundo oscilador ligeramente desfasado → beating
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.value = 62;
+
+    osc1.connect(humGain);
+    osc2.connect(humGain);
+    humGain.connect(audioCtx.destination);
+
+    osc1.start();
+    osc2.start();
+    humNode = osc1; // guardamos referencia para poder detenerlo si hiciera falta
+  } catch(e) {}
+}
+
+/* ── BEEPS AMBIENTE ──────────────────────────────────────
+   Se disparan aleatoriamente mientras el usuario lee.
+   Intervalo: entre 4 y 11 segundos. Tonos muy sutiles. */
+function startAmbientBeeps() {
+  stopAmbientBeeps();
+  function scheduleNext() {
+    const delay = 4000 + Math.random() * 7000; // 4–11 s
+    ambientTimer = setTimeout(() => {
+      if (!soundOn) return;
+      // elige aleatoriamente entre tres tipos de beep de terminal
+      const patterns = [
+        () => beep(880 + Math.random()*220, 0.04, 'sine',     0.008),
+        () => beep(440,                     0.03, 'square',   0.006),
+        () => { beep(660, 0.025, 'sine', 0.007); setTimeout(() => beep(770, 0.025, 'sine', 0.006), 80); },
+      ];
+      patterns[Math.floor(Math.random() * patterns.length)]();
+      scheduleNext();
+    }, delay);
+  }
+  scheduleNext();
+}
+
+function stopAmbientBeeps() {
+  if (ambientTimer) { clearTimeout(ambientTimer); ambientTimer = null; }
+}
+
+/* ── BEEP BASE ───────────────────────────────────────────── */
+function beep(freq=220, dur=0.07, type='sine', vol=0.035) {
+  if (!soundOn || !audioCtx) return;
+  try {
+    const osc  = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.value = vol;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+
+/* ════════════════════════════════════════════════════════════
+   TYPEWRITER — sonido variado por carácter
+   Mapea cada letra a una frecuencia base dentro de una escala
+   pentatónica (C3–C5) para que el tecleo suene musical,
+   no repetitivo. Las mayúsculas suenan ligeramente más agudas.
+════════════════════════════════════════════════════════════ */
+let typingTimer = null;
+
+// Tabla de frecuencias: 26 notas de una escala pentatónica extendida
+const CHAR_FREQS = (() => {
+  // pentatónica menor: C D# F G A# — repetida en varias octavas
+  const scale = [130,156,175,196,233, 261,311,349,392,466, 523,622,698,784,932];
+  const map = {};
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach((c, i) => {
+    map[c] = scale[i % scale.length];
+  });
+  return map;
+})();
+
+function charFreq(ch) {
+  const lower = ch.toLowerCase();
+  if (CHAR_FREQS[lower]) {
+    // mayúsculas: una octava más alta (×2)
+    return ch === ch.toUpperCase() && ch !== ch.toLowerCase()
+      ? CHAR_FREQS[lower] * 2
+      : CHAR_FREQS[lower];
+  }
+  // puntuación / espacios: tono neutro muy bajo
+  return 180 + Math.random() * 40;
+}
+
+function typeWriter(id, text, speed = 47) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  clearInterval(typingTimer);
+  el.textContent = '';
+  let i = 0;
+
+  typingTimer = setInterval(() => {
+    if (i < text.length) {
+      const ch = text[i];
+      el.textContent += ch;
+      i++;
+
+      // sonido cada carácter visible (no espacios ni saltos)
+      if (soundOn && ch.trim() !== '') {
+        const freq = charFreq(ch);
+        // variación sutil de volumen y duración para que no suene robótico
+        const vol  = 0.006 + Math.random() * 0.006;
+        const dur  = 0.018 + Math.random() * 0.018;
+        beep(freq, dur, 'sine', vol);
+      }
+
+      // scroll automático mientras tipea (útil en móvil)
+      el.scrollTop = el.scrollHeight;
+    } else {
+      clearInterval(typingTimer);
+      startAmbientBeeps(); // activa beeps de fondo cuando termina de leer
     }
+  }, speed);
+}
 
-    function beep(freq = 220, duration = 0.08, type = 'sine', volume = 0.04) {
-        if (!soundEnabled || !audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.value = freq;
-        gain.gain.value = volume;
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+/* ════════════════════════════════════════════════════════════
+   NAVEGACIÓN 2D
+════════════════════════════════════════════════════════════ */
+let currentSection = 1;
+const allSections  = Array.from(document.querySelectorAll('.section'));
+
+function moveTo(idx) {
+  initAudio();
+  stopAmbientBeeps(); // detiene beeps de la sección anterior
+
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  allSections.forEach(s => s.classList.remove('active'));
+  document.getElementById(`sec-${idx}`).classList.add('active');
+  currentSection = idx;
+
+  beep(160 + idx * 28, 0.06, 'square', 0.025);
+
+  if (TEXTS[idx]) {
+    // portada más lenta aún (60ms) para máximo dramatismo
+    typeWriter(`text-${idx}`, TEXTS[idx], idx === 1 ? 60 : 47);
+  }
+
+  // ── Eventos por sección ──────────────────────────────────
+  if (idx === 2) {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const inp = document.getElementById('pass');
+        inp.value = '';
+        inp.focus({ preventScroll: true });
+      }, 480);
+    });
+  }
+
+  if (idx === 3) { startSync(); }
+
+  if (idx === 8) {
+    // Flash de cálculo MAGI (8 × 125 ms = 1 s)
+    let flashCount = 0;
+    const flashInterval = setInterval(() => {
+      document.body.style.backgroundColor =
+        flashCount % 2 === 0 ? '#1f0000' : '#000000';
+      beep(80 + flashCount * 40, 0.04, 'sawtooth', 0.02);
+      flashCount++;
+      if (flashCount >= 8) {
+        clearInterval(flashInterval);
+        document.body.style.backgroundColor = '';
+      }
+    }, 125);
+
+    // La narrativa del veredicto es larga (~600 chars × 47ms ≈ 28s)
+    // La alerta aparece cuando termina de leer
+    setTimeout(() => {
+      document.getElementById('alert-trigger').style.display = 'block';
+      document.getElementById('btn-final').style.display    = 'inline-block';
+      document.body.classList.add('danger-bg');
+      beep(500, 0.14, 'sawtooth', 0.035);
+    }, 30000);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   SYNC BAR — más lenta (80ms por tick) para coincidir con la
+   nueva atmósfera. 100 ticks × 80ms = ~8 segundos.
+════════════════════════════════════════════════════════════ */
+function startSync() {
+  let p = 0;
+  const bar  = document.getElementById('sync-bar');
+  const label= document.getElementById('sync-label');
+  const wrap = bar.closest('[role="progressbar"]');
+
+  const t = setInterval(() => {
+    p = Math.min(p + 1, 100);
+    bar.style.width   = p + '%';
+    label.textContent = p + '%';
+    wrap && wrap.setAttribute('aria-valuenow', p);
+    if (p % 10 === 0) beep(195 + p * 1.5, 0.045, 'square', 0.018);
+    if (p >= 100) {
+      clearInterval(t);
+      document.getElementById('btn-sync').style.visibility = 'visible';
+      beep(640, 0.14, 'triangle', 0.038);
     }
+  }, 80); // ← 80ms/tick, antes era 32ms
+}
 
-    // --- EFECTOS VISUALES ---
-    function shakeScreen() {
-        document.body.classList.remove('shake');
-        void document.body.offsetWidth; // Forzar reflow para reiniciar animación
-        document.body.classList.add('shake');
-    }
+/* ════════════════════════════════════════════════════════════
+   TOKEN CHECK
+════════════════════════════════════════════════════════════ */
+function startApp() { moveTo(2); }
 
-    function typeWriter(elementId, text, speed = 15) {
-        const el = document.getElementById(elementId);
-        if (!el) return;
-        
-        clearInterval(currentTypingTimer);
-        el.textContent = "";
-        let i = 0;
-        
-        currentTypingTimer = setInterval(() => {
-            if (i < text.length) {
-                el.textContent += text.charAt(i);
-                i++;
-                if (soundEnabled && i % 4 === 0) beep(400 + (Math.random() * 50), 0.02, 'sine', 0.01);
-            } else {
-                clearInterval(currentTypingTimer);
-            }
-        }, speed);
-    }
+function checkPass() {
+  const v = document.getElementById('pass').value.toUpperCase().trim();
+  if (v === 'V3NU5-071025') {
+    moveTo(3);
+  } else {
+    beep(110, 0.15, 'square', 0.045);
+    const btn = document.getElementById('btn-verify');
+    btn.textContent = '✗ TOKEN INCORRECTO';
+    btn.style.background = '#7a0000';
+    setTimeout(() => {
+      btn.textContent      = 'VERIFICAR IDENTIDAD';
+      btn.style.background = '';
+    }, 1800);
+    document.getElementById('pass').focus();
+  }
+}
 
-    // --- LÓGICA DE NAVEGACIÓN ---
-    function moveTo(targetIndex) {
-        initAudio();
-        
-        // Mover cámara 3D
-        const nextZ = -(targetIndex - 1) * 2000;
-        world.style.transform = `translateZ(${nextZ}px)`;
+/* ════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  typeWriter('text-1', TEXTS[1], 60);
 
-        // Cambiar clases activas
-        sections.forEach(sec => sec.classList.remove('active'));
-        document.getElementById(`sec-${targetIndex}`).classList.add('active');
-        
-        // Efectos de transición
-        beep(180 + (targetIndex * 30), 0.06, 'square', 0.03);
-        shakeScreen();
+  window.addEventListener('pointerdown', initAudio, { once: true });
 
-        // Ejecutar texto o eventos de la sección destino
-        if (storyTexts[targetIndex]) {
-            typeWriter(`text-${targetIndex}`, storyTexts[targetIndex], targetIndex === 1 ? 45 : 18);
-        }
-
-        // Eventos específicos por sección
-        if (targetIndex === 2) {
-            setTimeout(() => document.getElementById('pass').focus(), 1400);
-        } else if (targetIndex === 3) {
-            startSync();
-        } else if (targetIndex === 8) {
-            setTimeout(() => {
-                document.getElementById('alert-trigger').style.display = 'block';
-                document.getElementById('btn-final').style.display = 'inline-block';
-                beep(520, 0.15, 'sawtooth', 0.04);
-            }, 12000);
-        }
-    }
-
-    // --- RUTINAS ESPECÍFICAS ---
-    function startApp() { moveTo(2); }
-
-    function checkPass() {
-        const pass = document.getElementById('pass').value.toUpperCase().trim();
-        if (pass === "V3NU5-071025") {
-            moveTo(3);
-        } else {
-            beep(120, 0.15, 'square', 0.05);
-            alert("ACCESO DENEGADO - TOKEN INCORRECTO");
-        }
-    }
-
-    function startSync() {
-        let progress = 0;
-        const bar = document.getElementById('sync-bar');
-        const label = document.getElementById('sync-label');
-        
-        const syncTimer = setInterval(() => {
-            progress += 1; // Incremento más limpio
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(syncTimer);
-                document.getElementById('btn-sync').style.visibility = "visible";
-                beep(660, 0.14, 'triangle', 0.04);
-            }
-            bar.style.width = `${progress}%`;
-            label.textContent = `${Math.floor(progress)}%`;
-            if (progress % 10 === 0) beep(200 + progress, 0.05, 'square', 0.02);
-        }, 30); // Ligeramente más lento para mejor rendimiento
-    }
-
-    // --- INICIALIZACIÓN ---
-    window.onload = () => {
-        typeWriter('text-1', storyTexts[1], 45);
-        // Habilitar audio con el primer clic en cualquier lugar
-        window.addEventListener('pointerdown', initAudio, { once: true });
-        
-        // Soporte para presionar "Enter" en el input
-        document.getElementById('pass').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPass();
-        });
-    };
+  document.getElementById('pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); checkPass(); }
+  });
+});
 </script>
 </body>
 </html>
