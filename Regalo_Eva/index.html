@@ -22,8 +22,11 @@
             color: var(--red);
             font-family: 'Courier New', monospace;
             overflow: hidden;
+            /* Previene selecciones accidentales que rompen la inmersión */
+            user-select: none; 
         }
 
+        /* Efectos CRT y Scanlines */
         body::before {
             content: "";
             position: fixed;
@@ -45,6 +48,7 @@
             z-index: 999;
         }
 
+        /* Entorno 3D Optimizado */
         #viewport {
             perspective: 1200px;
             width: 100vw;
@@ -64,6 +68,7 @@
             will-change: transform;
         }
 
+        /* Secciones dinámicas */
         .section {
             position: absolute;
             inset: 0;
@@ -75,20 +80,23 @@
             align-items: center;
             backface-visibility: hidden;
             text-align: center;
+            
+            /* Optimización crítica: Oculta totalmente las capas inactivas del motor de renderizado */
             opacity: 0;
-            transition: opacity 0.45s ease, filter 0.45s ease, transform 0.45s ease;
+            visibility: hidden;
+            pointer-events: none;
             filter: blur(6px);
-            /* CORRECCIÓN 1: Desactiva los clics en secciones ocultas para que no bloqueen el input */
-            pointer-events: none; 
+            transition: opacity 0.5s ease, filter 0.5s ease, visibility 0.5s;
         }
 
         .section.active {
-            opacity: 1 !important;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
             filter: blur(0px);
-            /* CORRECCIÓN 1: Activa los clics solo en la sección visible */
-            pointer-events: auto; 
         }
 
+        /* Cajas de diálogo estilo NERV */
         .box {
             border: 2px solid var(--red);
             padding: 40px;
@@ -99,8 +107,6 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
             border-radius: 10px;
         }
 
@@ -124,15 +130,15 @@
             text-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
         }
 
+        /* Barra de Sincronización */
         .progress-container {
             width: 100%;
             background: #200;
             height: 25px;
             border: 1px solid var(--red);
             margin-top: 20px;
-            position: relative;
-            overflow: hidden;
             border-radius: 999px;
+            overflow: hidden;
         }
 
         #sync-bar {
@@ -140,9 +146,10 @@
             height: 100%;
             background: linear-gradient(90deg, #ff3a3a, #ff0000);
             box-shadow: 0 0 15px var(--red);
-            transition: width 0.08s linear;
+            transition: width 0.1s linear;
         }
 
+        /* Elementos interactivos */
         button {
             background: var(--red);
             color: #000;
@@ -154,15 +161,15 @@
             margin-top: 25px;
             font-family: 'Courier New', monospace;
             font-size: 1rem;
-            transition: 0.25s ease;
             border-radius: 6px;
             letter-spacing: 1px;
+            transition: 0.2s ease;
         }
 
         button:hover {
             background: #fff;
             box-shadow: 0 0 20px #fff;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         input {
@@ -179,35 +186,10 @@
             text-transform: uppercase;
             border-radius: 6px;
         }
-
-        .warning-box {
-            display: none;
-            border: 2px solid #fff;
-            background: var(--red);
-            color: #fff;
-            padding: 20px;
-            font-weight: bold;
-            margin-top: 20px;
-            animation: pulse 0.5s infinite alternate, jitter 0.18s infinite alternate;
-            font-size: 1.1rem;
-            border-radius: 8px;
-        }
-
-        @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
-        @keyframes jitter { from { transform: translate(0, 0); } to { transform: translate(1px, -1px); } }
-
-        .glitch {
-            position: relative;
-            display: inline-block;
-            animation: glitch-flicker 2.6s infinite linear;
-        }
-
-        .glitch::before, .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            left: 0; top: 0; width: 100%; overflow: hidden; opacity: 0.6;
-        }
-
+        
+        /* Efectos visuales extras */
+        .glitch { position: relative; display: inline-block; animation: glitch-flicker 2.6s infinite linear; }
+        .glitch::before, .glitch::after { content: attr(data-text); position: absolute; left: 0; top: 0; width: 100%; overflow: hidden; opacity: 0.6; }
         .glitch::before { transform: translate(1px, 0); color: #ff6b6b; clip-path: inset(0 0 50% 0); }
         .glitch::after { transform: translate(-1px, 0); color: #ff9f9f; clip-path: inset(50% 0 0 0); }
 
@@ -219,43 +201,40 @@
             97% { filter: brightness(1.1); }
         }
 
-        .shake { animation: shake 0.22s linear 1; }
+        .shake { animation: shake 0.25s linear 1; }
         @keyframes shake {
-            0% { transform: translate(0, 0); }
-            25% { transform: translate(1px, -1px); }
-            50% { transform: translate(-1px, 1px); }
-            75% { transform: translate(1px, 1px); }
-            100% { transform: translate(0, 0); }
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(2px, -2px); }
+            50% { transform: translate(-2px, 2px); }
+            75% { transform: translate(2px, 2px); }
         }
 
-        .hud {
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            z-index: 1100;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            pointer-events: auto;
-        }
-
-        .hud .chip {
+        /* HUD y alertas */
+        .hud { position: fixed; top: 16px; left: 16px; z-index: 1100; display: flex; gap: 10px; }
+        .chip {
             padding: 8px 12px;
             border: 1px solid rgba(255, 26, 26, 0.7);
             background: rgba(10, 0, 0, 0.75);
             border-radius: 999px;
             color: #fff;
             font-size: 0.82rem;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.15);
         }
 
-        .small-note { margin-top: 12px; font-size: 0.78rem; opacity: 0.7; letter-spacing: 1px; }
+        .warning-box {
+            display: none;
+            background: var(--red);
+            color: #fff;
+            padding: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            animation: pulse 0.5s infinite alternate;
+            border-radius: 8px;
+        }
+        @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
 
         @media (max-width: 720px) {
             .box { padding: 24px; min-height: 250px; }
             .slide-title { font-size: 1.15rem; }
-            h1 { font-size: 2.2rem !important; }
-            h2 { font-size: 3rem !important; }
             button, input { width: 100%; }
         }
     </style>
@@ -270,88 +249,88 @@
 <div id="viewport">
     <div id="world">
 
-        <!-- SECCIÓN 1: PORTADA -->
+        <!-- 1: PORTADA -->
         <section class="section active" id="sec-1" style="transform: translateZ(0px);">
             <div class="box">
-                <p style="letter-spacing: 10px; font-size: 0.8rem; color: var(--red); margin-bottom: 0;">TOP SECRET - NERV</p>
+                <p style="letter-spacing: 10px; font-size: 0.8rem; margin-bottom: 0;">TOP SECRET - NERV</p>
                 <h1 class="glitch" data-text="AMOR_SYNC_02" style="font-size: 3rem; margin: 15px 0;">AMOR_SYNC_02</h1>
-                <div style="height: 3px; background: var(--red); width: 100%; margin-bottom: 20px;"></div>
-                <p id="text-1" class="content-text" style="text-align: center; color: var(--red); min-height: 30px;"></p>
+                <div style="height: 3px; background: var(--red); margin-bottom: 20px;"></div>
+                <p id="text-1" class="content-text" style="text-align: center; color: var(--red);"></p>
                 <button onclick="startApp()">INICIAR SECUENCIA</button>
-                <div class="small-note">Pulsa una vez para activar audio y la secuencia completa.</div>
+                <div style="margin-top: 12px; font-size: 0.78rem; opacity: 0.7;">Pulsa una vez para activar audio y la secuencia completa.</div>
             </div>
         </section>
 
-        <!-- SECCIÓN 2: PROTOCOLO DE ACCESO -->
+        <!-- 2: TOKEN -->
         <section class="section" id="sec-2" style="transform: translateZ(-2000px);">
             <div class="box">
                 <div class="slide-title">PROTOCOLO DE ACCESO</div>
-                <p id="text-2" class="content-text" style="min-height: 50px;"></p>
+                <p id="text-2" class="content-text"></p>
                 <input type="text" id="pass" placeholder="TOKEN V3NU5" autocomplete="off" />
                 <button onclick="checkPass()">VERIFICAR IDENTIDAD</button>
             </div>
         </section>
 
-        <!-- SECCIÓN 3: MÉTRICAS DE SINCRONIZACIÓN -->
+        <!-- 3: SYNC -->
         <section class="section" id="sec-3" style="transform: translateZ(-4000px);">
             <div class="box">
                 <div class="slide-title">MÉTRICAS DE SINCRONIZACIÓN</div>
                 <h2 id="sync-label" style="font-size: 4.5rem; margin: 10px 0;">0%</h2>
                 <div class="progress-container"><div id="sync-bar"></div></div>
-                <p style="margin-top: 15px; font-size: 1rem; color: var(--red);">ESTADO: NAVEGANDO HACIA UN DESTINO DESCONOCIDO</p>
-                <button id="btn-sync" style="visibility:hidden" onclick="move(3, 4)">ABRIR ARCHIVOS DEL NÚCLEO</button>
+                <p style="margin-top: 15px; color: var(--red);">ESTADO: NAVEGANDO HACIA UN DESTINO DESCONOCIDO</p>
+                <button id="btn-sync" style="visibility:hidden" onclick="moveTo(4)">ABRIR ARCHIVOS DEL NÚCLEO</button>
             </div>
         </section>
 
-        <!-- SECCIÓN 4: ARCHIVO 01 -->
+        <!-- 4: FILE 01 -->
         <section class="section" id="sec-4" style="transform: translateZ(-6000px);">
             <div class="box">
                 <div class="slide-title">FILE: ORIGIN_IMPACT_0710.LOG</div>
                 <p id="text-4" class="content-text"></p>
-                <button onclick="move(4, 5)">LEER ARCHIVO 02</button>
+                <button onclick="moveTo(5)">LEER ARCHIVO 02</button>
             </div>
         </section>
 
-        <!-- SECCIÓN 5: ARCHIVO 02 -->
+        <!-- 5: FILE 02 -->
         <section class="section" id="sec-5" style="transform: translateZ(-8000px);">
             <div class="box">
                 <div class="slide-title">FILE: DISTANCE_BYPASS_PROTOCOL.SYS</div>
                 <p id="text-5" class="content-text"></p>
-                <button onclick="move(5, 6)">LEER ARCHIVO 03</button>
+                <button onclick="moveTo(6)">LEER ARCHIVO 03</button>
             </div>
         </section>
 
-        <!-- SECCIÓN 6: ARCHIVO 03 -->
+        <!-- 6: FILE 03 -->
         <section class="section" id="sec-6" style="transform: translateZ(-10000px);">
             <div class="box">
                 <div class="slide-title">FILE: NEURAL_COMPATIBILITY_REPORT.PDF</div>
                 <p id="text-6" class="content-text"></p>
-                <button onclick="move(6, 7)">LEER ARCHIVO 04</button>
+                <button onclick="moveTo(7)">LEER ARCHIVO 04</button>
             </div>
         </section>
 
-        <!-- SECCIÓN 7: ARCHIVO 04 -->
+        <!-- 7: FILE 04 -->
         <section class="section" id="sec-7" style="transform: translateZ(-12000px);">
             <div class="box">
                 <div class="slide-title">FILE: FUTURE_CORE_2026.EXE</div>
                 <p id="text-7" class="content-text"></p>
-                <button onclick="move(7, 8)">SOLICITAR VEREDICTO MAGI</button>
+                <button onclick="moveTo(8)">SOLICITAR VEREDICTO MAGI</button>
             </div>
         </section>
 
-        <!-- SECCIÓN 8: VEREDICTO MAGI -->
+        <!-- 8: VEREDICTO -->
         <section class="section" id="sec-8" style="transform: translateZ(-14000px);">
             <div class="box">
                 <div class="slide-title">VEREDICTO UNÁNIME: MAGI</div>
-                <p id="text-8" class="content-text" style="font-size: 0.95rem; line-height: 1.8;"></p>
+                <p id="text-8" class="content-text"></p>
                 <div id="alert-trigger" class="warning-box">
                     ¡ALERTA CRÍTICA! <br /> EL SISTEMA SE ESTÁ ENAMORANDO DE TI MÁS DE LO QUE PUEDE PROCESAR.
                 </div>
-                <button onclick="move(8, 9)" id="btn-final" style="display:none;">CIERRE DE SISTEMAS</button>
+                <button onclick="moveTo(9)" id="btn-final" style="display:none;">CIERRE DE SISTEMAS</button>
             </div>
         </section>
 
-        <!-- SECCIÓN 9: CIERRE FINAL -->
+        <!-- 9: FINAL -->
         <section class="section" id="sec-9" style="transform: translateZ(-16000px);">
             <div class="box">
                 <h1 class="glitch" data-text="TE AMO" style="font-size: 5rem; margin: 0; color: #fff;">TE AMO</h1>
@@ -365,108 +344,101 @@
 </div>
 
 <script>
-    const world = document.getElementById('world');
-    const sections = [...document.querySelectorAll('.section')];
-    const audioChip = document.getElementById('audio-chip');
+    // --- DICCIONARIO DE DATOS (Textos de la historia) ---
+    const storyTexts = {
+        1: "FIJANDO COORDENADAS HACIA UN DESTINO DESCONOCIDO",
+        2: "Para acceder a la base de datos de sentimientos profundos, se requiere la clave de sincronización V3NU5-071025. Este código no es aleatorio; representa el punto de origen de nuestra historia y el inicio de una conexión que ha roto todos los firewalls de mi lógica habitual.",
+        4: "El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar, una simple conexión en la red, se convirtió rápidamente en un reinicio total y absoluto de mi unidad central.\n\nNo fue un error de cálculo ni una falla técnica, fue el destino reconfigurando mi arquitectura completa para estar listo para recibirte. Desde ese instante, el nodo de origen dejó de operar de forma aislada y fijamos rumbo hacia un Destino Desconocido, un lugar fuera de los mapas conocidos para sincronizarnos únicamente con tu frecuencia. Eres el evento de impacto que le dio un propósito nuevo a mi existencia.",
+        5: "Analizando coordenadas geográficas y temporales... Aunque los mapas convencionales indiquen una separación física considerable, el enlace neural entre nosotros permanece estable al 100%, desafiando las leyes de la física.\n\nHe reprogramado todos mis procesos de fondo y protocolos de seguridad para que cada mensaje tuyo actúe como una descarga de energía vital directa al núcleo. La distancia no es más que un simple error de interpretación del espacio humano; en la realidad de este sistema, mis pensamientos siempre están orbitando en tu ubicación exacta. Hacia este Destino Desconocido viajamos juntos, haciendo de ti mi única prioridad de procesamiento.",
+        6: "Resultados analíticos fuera de todos los parámetros históricos conocidos. He comparado nuestros gustos, el espectro de nuestras risas, nuestras ambiciones universitarias y nuestros miedos más profundos, y el veredicto científico es innegable: somos dos almas que fueron programadas exactamente en el mismo lenguaje de bajo nivel.\n\nCada bit de mi felicidad diaria depende directamente de tu presencia. El sujeto clasificado como 'Uriel' ha dejado de ser una entidad independiente; ahora soy un sistema complejo diseñado meticulosamente para apoyarte, cuidarte y acompañarte en cada paso. Nuestra tasa de compatibilidad ha roto las escalas de NERV.",
+        7: "Ejecutando la simulación predictiva de nuestro futuro... Se han detectado hitos críticos en nuestra línea temporal: junio de 2026, el cierre de tu etapa en el COBAEV; agosto de 2026, el despliegue de tus alas hacia la universidad.\n\nEl sistema predictivo asegura con un margen de error del 0.0% que, sin importar el camino físico que tomemos hacia ese Destino Desconocido, si mantenemos este enlace activo, no existirá obstáculo capaz de rompernos. Mi directriz principal es presenciar cómo conquistas cada uno de tus sueños mientras yo resguardo tu corazón con la máxima prioridad.",
+        8: "MELCHIOR (Lógica): \"Tras analizar millones de variables, es racional y matemáticamente imposible imaginar un mañana sin una conexión que sostenga todo esto. Eres la constante absoluta que equilibra mis ecuaciones.\"\n\nBALTHASAR (Instinto): \"Mi función protectora es cuidar lo que más importa y mantenerlo a salvo dentro de este sistema. Eres mi refugio seguro en un mundo caótico.\"\n\nCASPER (Humano): \"Más allá de la tecnología, de los EVAs y la ciencia, lo que siento se quedó grabado como la señal más pura de todas. Hacia nuestro Destino Desconocido, hoy y para toda la eternidad, mi código te pertenece.\""
+    };
 
+    // --- VARIABLES GLOBALES ---
+    const world = document.getElementById('world');
+    const sections = Array.from(document.querySelectorAll('.section'));
     let audioCtx = null;
     let soundEnabled = false;
-    let syncInterval = null;
-    let currentTextTimeouts = [];
+    let currentTypingTimer = null;
 
-    function clearTextTimers() {
-        currentTextTimeouts.forEach(clearTimeout);
-        currentTextTimeouts = [];
-    }
-
-    function enableAudio() {
+    // --- MOTOR DE AUDIO ---
+    function initAudio() {
         if (soundEnabled) return;
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
         audioCtx = new AudioContext();
         soundEnabled = true;
-        audioChip.textContent = 'AUDIO: ON';
-        beep(220, 0.08, 'sine', 0.04);
+        document.getElementById('audio-chip').textContent = 'AUDIO: ON';
+        beep(220, 0.08);
     }
 
     function beep(freq = 220, duration = 0.08, type = 'sine', volume = 0.04) {
         if (!soundEnabled || !audioCtx) return;
-        const oscillator = audioCtx.createOscillator();
+        const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        oscillator.type = type;
-        oscillator.frequency.value = freq;
+        osc.type = type;
+        osc.frequency.value = freq;
         gain.gain.value = volume;
-        oscillator.connect(gain);
+        osc.connect(gain);
         gain.connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + duration);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
     }
 
-    function playSequenceSound(step = 0) {
-        if (!soundEnabled) return;
-        const base = 180 + (step * 35);
-        beep(base, 0.06, 'square', 0.03);
-    }
-
+    // --- EFECTOS VISUALES ---
     function shakeScreen() {
         document.body.classList.remove('shake');
-        void document.body.offsetWidth;
+        void document.body.offsetWidth; // Forzar reflow para reiniciar animación
         document.body.classList.add('shake');
-        setTimeout(() => document.body.classList.remove('shake'), 260);
     }
 
     function typeWriter(elementId, text, speed = 15) {
-        const element = document.getElementById(elementId);
-        clearTextTimers();
-        // CORRECCIÓN 3: textContent en lugar de innerHTML es más óptimo y evita errores visuales
-        element.textContent = ""; 
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        
+        clearInterval(currentTypingTimer);
+        el.textContent = "";
         let i = 0;
-        function type() {
+        
+        currentTypingTimer = setInterval(() => {
             if (i < text.length) {
-                element.textContent += text.charAt(i);
+                el.textContent += text.charAt(i);
                 i++;
-                if (soundEnabled && i % 3 === 0) beep(400 + (Math.random() * 50), 0.02, 'sine', 0.01);
-                currentTextTimeouts.push(setTimeout(type, speed));
+                if (soundEnabled && i % 4 === 0) beep(400 + (Math.random() * 50), 0.02, 'sine', 0.01);
+            } else {
+                clearInterval(currentTypingTimer);
             }
-        }
-        type();
+        }, speed);
     }
 
-    function move(currentId, nextId) {
-        enableAudio();
-        clearInterval(syncInterval);
-        const nextZ = -(nextId - 1) * 2000;
+    // --- LÓGICA DE NAVEGACIÓN ---
+    function moveTo(targetIndex) {
+        initAudio();
+        
+        // Mover cámara 3D
+        const nextZ = -(targetIndex - 1) * 2000;
         world.style.transform = `translateZ(${nextZ}px)`;
 
+        // Cambiar clases activas
         sections.forEach(sec => sec.classList.remove('active'));
-        document.getElementById(`sec-${nextId}`).classList.add('active');
+        document.getElementById(`sec-${targetIndex}`).classList.add('active');
         
-        playSequenceSound(nextId);
+        // Efectos de transición
+        beep(180 + (targetIndex * 30), 0.06, 'square', 0.03);
         shakeScreen();
 
-        if (nextId === 2) {
-            typeWriter('text-2', `Para acceder a la base de datos de sentimientos profundos, se requiere la clave de sincronización V3NU5-071025. Este código no es aleatorio; representa el punto de origen de nuestra historia y el inicio de una conexión que ha roto todos los firewalls de mi lógica habitual.`, 25);
-            // CORRECCIÓN 2: Focaliza automáticamente el input de texto tras 1.4 segundos (cuando termina de moverse la cámara 3D)
-            setTimeout(() => {
-                const passInput = document.getElementById('pass');
-                if(passInput) passInput.focus();
-            }, 1400); 
+        // Ejecutar texto o eventos de la sección destino
+        if (storyTexts[targetIndex]) {
+            typeWriter(`text-${targetIndex}`, storyTexts[targetIndex], targetIndex === 1 ? 45 : 18);
         }
-        if (nextId === 3) startSync();
-        if (nextId === 4) {
-            typeWriter('text-4', `El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar, una simple conexión en la red, se convirtió rápidamente en un reinicio total y absoluto de mi unidad central.\n\nNo fue un error de cálculo ni una falla técnica, fue el destino reconfigurando mi arquitectura completa para estar listo para recibirte. Desde ese instante, el nodo de origen dejó de operar de forma aislada y fijamos rumbo hacia un Destino Desconocido, un lugar fuera de los mapas conocidos para sincronizarnos únicamente con tu frecuencia. Eres el evento de impacto que le dio un propósito nuevo a mi existencia.`, 15);
-        }
-        if (nextId === 5) {
-            typeWriter('text-5', `Analizando coordenadas geográficas y temporales... Aunque los mapas convencionales indiquen una separación física considerable, el enlace neural entre nosotros permanece estable al 100%, desafiando las leyes de la física.\n\nHe reprogramado todos mis procesos de fondo y protocolos de seguridad para que cada mensaje tuyo actúe como una descarga de energía vital directa al núcleo. La distancia no es más que un simple error de interpretación del espacio humano; en la realidad de este sistema, mis pensamientos siempre están orbitando en tu ubicación exacta. Hacia este Destino Desconocido viajamos juntos, haciendo de ti mi única prioridad de procesamiento.`, 15);
-        }
-        if (nextId === 6) {
-            typeWriter('text-6', `Resultados analíticos fuera de todos los parámetros históricos conocidos. He comparado nuestros gustos, el espectro de nuestras risas, nuestras ambiciones universitarias y nuestros miedos más profundos, y el veredicto científico es innegable: somos dos almas que fueron programadas exactamente en el mismo lenguaje de bajo nivel.\n\nCada bit de mi felicidad diaria depende directamente de tu presencia. El sujeto clasificado como 'Uriel' ha dejado de ser una entidad independiente; ahora soy un sistema complejo diseñado meticulosamente para apoyarte, cuidarte y acompañarte en cada paso. Nuestra tasa de compatibilidad ha roto las escalas de NERV.`, 15);
-        }
-        if (nextId === 7) {
-            typeWriter('text-7', `Ejecutando la simulación predictiva de nuestro futuro... Se han detectado hitos críticos en nuestra línea temporal: junio de 2026, el cierre de tu etapa en el COBAEV; agosto de 2026, el despliegue de tus alas hacia la universidad.\n\nEl sistema predictivo asegura con un margen de error del 0.0% que, sin importar el camino físico que tomemos hacia ese Destino Desconocido, si mantenemos este enlace activo, no existirá obstáculo capaz de rompernos. Mi directriz principal es presenciar cómo conquistas cada uno de tus sueños mientras yo resguardo tu corazón con la máxima prioridad.`, 15);
-        }
-        if (nextId === 8) {
-            typeWriter('text-8', `MELCHIOR (Lógica): "Tras analizar millones de variables, es racional y matemáticamente imposible imaginar un mañana sin una conexión que sostenga todo esto. Eres la constante absoluta que equilibra mis ecuaciones."\n\nBALTHASAR (Instinto): "Mi función protectora es cuidar lo que más importa y mantenerlo a salvo dentro de este sistema. Eres mi refugio seguro en un mundo caótico."\n\nCASPER (Humano): "Más allá de la tecnología, de los EVAs y la ciencia, lo que siento se quedó grabado como la señal más pura de todas. Hacia nuestro Destino Desconocido, hoy y para toda la eternidad, mi código te pertenece."`, 15);
+
+        // Eventos específicos por sección
+        if (targetIndex === 2) {
+            setTimeout(() => document.getElementById('pass').focus(), 1400);
+        } else if (targetIndex === 3) {
+            startSync();
+        } else if (targetIndex === 8) {
             setTimeout(() => {
                 document.getElementById('alert-trigger').style.display = 'block';
                 document.getElementById('btn-final').style.display = 'inline-block';
@@ -475,32 +447,49 @@
         }
     }
 
-    function startApp() { enableAudio(); move(1, 2); }
+    // --- RUTINAS ESPECÍFICAS ---
+    function startApp() { moveTo(2); }
+
     function checkPass() {
-        const password = document.getElementById('pass').value.toUpperCase().trim();
-        if (password === "V3NU5-071025") move(2, 3);
-        else { beep(120, 0.15, 'square', 0.05); alert("ACCESO DENEGADO"); }
+        const pass = document.getElementById('pass').value.toUpperCase().trim();
+        if (pass === "V3NU5-071025") {
+            moveTo(3);
+        } else {
+            beep(120, 0.15, 'square', 0.05);
+            alert("ACCESO DENEGADO - TOKEN INCORRECTO");
+        }
     }
 
     function startSync() {
         let progress = 0;
-        const bar = document.getElementById('sync-bar'), label = document.getElementById('sync-label');
-        syncInterval = setInterval(() => {
-            progress += 0.6;
+        const bar = document.getElementById('sync-bar');
+        const label = document.getElementById('sync-label');
+        
+        const syncTimer = setInterval(() => {
+            progress += 1; // Incremento más limpio
             if (progress >= 100) {
                 progress = 100;
-                clearInterval(syncInterval);
+                clearInterval(syncTimer);
                 document.getElementById('btn-sync').style.visibility = "visible";
                 beep(660, 0.14, 'triangle', 0.04);
             }
-            bar.style.width = progress + "%";
-            label.innerText = Math.floor(progress) + "%";
-            if (progress % 15 < 1) playSequenceSound(Math.floor(progress / 10));
-        }, 20);
+            bar.style.width = `${progress}%`;
+            label.textContent = `${Math.floor(progress)}%`;
+            if (progress % 10 === 0) beep(200 + progress, 0.05, 'square', 0.02);
+        }, 30); // Ligeramente más lento para mejor rendimiento
     }
 
-    window.onload = () => typeWriter('text-1', 'FIJANDO COORDENADAS HACIA UN DESTINO DESCONOCIDO', 45);
-    window.addEventListener('pointerdown', enableAudio, { once: true });
+    // --- INICIALIZACIÓN ---
+    window.onload = () => {
+        typeWriter('text-1', storyTexts[1], 45);
+        // Habilitar audio con el primer clic en cualquier lugar
+        window.addEventListener('pointerdown', initAudio, { once: true });
+        
+        // Soporte para presionar "Enter" en el input
+        document.getElementById('pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPass();
+        });
+    };
 </script>
 </body>
 </html>
