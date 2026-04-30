@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAGI_OS_PREZI_MODE</title>
+    <title>MAGI_OS: UNEXPLORED_HAPPINESS</title>
     <style>
-        :root { --red: #ff0000; --dark: #050000; }
+        :root { --red: #ff0000; --dark: #050000; --glow: rgba(255,0,0,0.4); }
         
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -13,19 +13,25 @@
             font-family: 'Courier New', monospace; overflow: hidden;
         }
 
-        /* Contenedor de la Cámara */
+        /* Efecto CRT Scanlines */
+        body::before {
+            content: " "; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 1000;
+        }
+
         #viewport {
             perspective: 1000px;
             width: 100vw; height: 100vh;
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* El "Mundo" que se mueve */
         #world {
             position: relative;
             width: 100%; height: 100%;
             transform-style: preserve-3d;
-            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .section {
@@ -35,79 +41,97 @@
             justify-content: center; align-items: center;
             backface-visibility: hidden;
             text-align: center;
+            opacity: 0;
+            transition: opacity 1s;
         }
 
-        /* Posicionamiento en el espacio 3D (Z-axis) */
+        .active { opacity: 1 !important; }
+
+        /* Posicionamiento en el espacio 3D */
         #sec-login { transform: translateZ(0px); }
-        #sec-stats { transform: translateZ(-2000px) rotateY(10deg); opacity: 0; }
-        #sec-magi  { transform: translateZ(-4000px) rotateX(-10deg); opacity: 0; }
+        #sec-archive { transform: translateZ(-2500px); }
+        #sec-magi { transform: translateZ(-5000px); }
 
-        .active { opacity: 1 !important; transition: opacity 1s; }
-
-        /* Estética NERV */
         .box {
             border: 2px solid var(--red);
             padding: 30px;
-            background: rgba(10,0,0,0.9);
-            box-shadow: 0 0 30px rgba(255,0,0,0.3);
-            max-width: 400px;
+            background: rgba(10,0,0,0.95);
+            box-shadow: 0 0 30px var(--glow);
+            max-width: 500px;
         }
 
-        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 12px; margin: 15px 0; width: 80%; text-align: center; }
-        button { background: var(--red); color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; width: 100%; }
-        
-        .hex {
-            border: 1px solid var(--red); margin: 10px; padding: 15px;
-            clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
-            background: rgba(50,0,0,0.2);
+        .archive-card {
+            border: 1px solid var(--red); background: rgba(30,0,0,0.5); margin: 8px; padding: 12px; 
+            width: 200px; cursor: pointer; transition: 0.3s; font-size: 0.7rem;
         }
+        .archive-card:hover { background: var(--red); color: #000; box-shadow: 0 0 15px var(--red); }
+        .archive-card.read { border-color: #00ff00; color: #00ff00; }
+
+        input { background: #000; border: 1px solid var(--red); color: var(--red); padding: 12px; margin: 15px 0; width: 80%; text-align: center; outline: none; }
+        button { background: var(--red); color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; }
+        button:disabled { background: #300; color: #600; cursor: not-allowed; }
+
+        .warning-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,0,0,0.2); z-index: 2000; pointer-events: none;
+            animation: pulse 0.5s infinite alternate;
+        }
+        @keyframes pulse { from { opacity: 0; } to { opacity: 1; } }
 
         #bg-grid {
             position: fixed; top: 0; left: 0; width: 200%; height: 200%;
             background-image: linear-gradient(var(--red) 1px, transparent 1px), linear-gradient(90deg, var(--red) 1px, transparent 1px);
-            background-size: 50px 50px;
-            opacity: 0.05; z-index: -1;
-            transform: rotateX(60deg);
+            background-size: 50px 50px; opacity: 0.05; z-index: -1; transform: rotateX(60deg);
         }
     </style>
 </head>
 <body>
 
 <div id="bg-grid"></div>
+<div id="warning" class="warning-overlay"></div>
 
 <div id="viewport">
     <div id="world">
         
         <section class="section active" id="sec-login">
             <div class="box">
-                <h2 style="letter-spacing: 5px;">MAGI SYSTEM</h2>
-                <p style="font-size: 0.7rem;">ESPERANDO TOKEN DE ACCESO...</p>
-                <input type="text" id="pass" placeholder="V3NU5-XXXXXX">
-                <button onclick="goToStats()">INICIAR PROTOCOLO</button>
+                <h2 style="letter-spacing: 5px;">MAGI_OS v3.0</h2>
+                <p style="font-size: 0.7rem; color: #800;">LOCALIZANDO: SECTOR DE LA FELICIDAD NO EXPLORADA</p>
+                <input type="text" id="pass" placeholder="V3NU5-071025">
+                <button onclick="goToArchive()">INICIAR PROTOCOLO</button>
             </div>
         </section>
 
-        <section class="section" id="sec-stats">
-            <div class="box">
-                <h3>ESTADO DE SINCRONIZACIÓN</h3>
-                <div id="timer" style="font-size: 1.5rem; margin: 20px 0; font-weight: bold;"></div>
-                <div style="text-align: left; font-size: 0.8rem;">
-                    SYNC RATE: 99.9% <br>
-                    NODE: ÁLAMO, VERACRUZ <br>
-                    STATUS: ETERNAL_LINK
-                </div>
-                <button onclick="goToMagi()" style="margin-top: 20px;">SOLICITAR VEREDICTO</button>
+        <section class="section" id="sec-archive">
+            <h3 style="margin-bottom: 5px;">BASE DE DATOS: RECUERDOS_SINCRO</h3>
+            <p id="sync-val" style="color: #ff0000; font-weight: bold; margin-bottom: 20px;">SYNC: 0.0%</p>
+            
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 850px;">
+                <div class="archive-card" onclick="showFile(this, 'LOG_ORIGIN: El sistema registró el primer impacto el 07 de octubre. Fue el inicio de una nueva arquitectura de vida donde abandonamos las coordenadas conocidas.')">FILE: ORIGIN.LOG</div>
+                <div class="archive-card" onclick="showFile(this, 'BYPASS_DISTANCE: La distancia no existe en este sector. Hemos reprogramado la percepción del espacio para que cada mensaje sea una descarga de energía vital.')">FILE: DISTANCE.SYS</div>
+                <div class="archive-card" onclick="showFile(this, 'NEURAL_REPORT: 100% de coincidencia. El sujeto Uriel muestra un incremento de dopamina crítico cada vez que recibe datos de Venus.')">FILE: NEURAL.DAT</div>
+                <div class="archive-card" onclick="showFile(this, 'FUTURE_CORE: Proyectos 2026. El sistema predice éxito total en cada meta siempre que el nodo Venus permanezca en el centro del núcleo.')">FILE: FUTURE.EXE</div>
+            </div>
+
+            <div id="display-text" style="margin: 20px; height: 80px; font-size: 0.9rem; color: #fff; max-width: 600px; line-height: 1.4;"></div>
+            
+            <div class="box" style="padding: 15px; width: 320px;">
+                <div id="timer" style="font-size: 1.1rem; margin-bottom: 10px;"></div>
+                <button id="magi-btn" disabled onclick="goToMagi()">SOLICITAR VEREDICTO</button>
             </div>
         </section>
 
         <section class="section" id="sec-magi">
-            <h2 style="color: white; margin-bottom: 20px;">SISTEMA MAGI: UNÁNIME</h2>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                <div class="hex"><b>MELCHIOR-1</b> <br> <span style="font-size: 0.7rem;">APROBADO: Lógica Pura</span></div>
-                <div class="hex"><b>BALTHASAR-2</b> <br> <span style="font-size: 0.7rem;">APROBADO: Instinto</span></div>
-                <div class="hex"><b>CASPER-3</b> <br> <span style="font-size: 0.7rem;">APROBADO: Te amo, Venus</span></div>
+            <div class="box" style="max-width: 650px;">
+                <h2 id="magi-title" style="color: white;">ANALIZANDO...</h2>
+                <div id="verdict-text" style="font-size: 1rem; line-height: 1.6; min-height: 120px; margin: 20px 0;"></div>
+                
+                <div id="final-warning" style="display:none; border: 2px solid white; background: red; color: white; padding: 15px; font-weight: bold; animation: pulse 0.3s infinite alternate;">
+                    ¡ALERTA CRÍTICA! <br> EL SISTEMA SE ESTÁ ENAMORANDO DE TI MÁS DE LO QUE PUEDE PROCESAR.
+                </div>
+
+                <p onclick="location.reload()" style="margin-top: 30px; cursor: pointer; text-decoration: underline; font-size: 0.7rem; opacity: 0.5;">CERRAR TERMINAL ETERNA</p>
             </div>
-            <p onclick="location.reload()" style="margin-top: 30px; cursor: pointer; text-decoration: underline; font-size: 0.7rem;">CERRAR TERMINAL</p>
         </section>
 
     </div>
@@ -115,25 +139,57 @@
 
 <script>
     const world = document.getElementById('world');
+    let filesRead = 0;
 
-    function goToStats() {
+    function goToArchive() {
         const p = document.getElementById('pass').value.toUpperCase();
         if(p === "V3NU5-071025") {
-            // Animación Prezi: Zoom hacia la cámara
-            world.style.transform = "translateZ(2000px) rotateY(-10deg)";
+            world.style.transform = "translateZ(2500px)";
             document.getElementById('sec-login').classList.remove('active');
-            document.getElementById('sec-stats').classList.add('active');
+            document.getElementById('sec-archive').classList.add('active');
             startTimer();
-        } else {
-            alert("ACCESO DENEGADO");
+        } else { alert("ERROR: TOKEN NO VÁLIDO"); }
+    }
+
+    function showFile(el, text) {
+        if(!el.classList.contains('read')) {
+            el.classList.add('read');
+            filesRead++;
+            let percent = (filesRead / 4) * 99.9;
+            document.getElementById('sync-val').innerText = "SYNC: " + percent.toFixed(1) + "%";
+            if(filesRead >= 4) document.getElementById('magi-btn').disabled = false;
         }
+        document.getElementById('display-text').innerText = text;
     }
 
     function goToMagi() {
-        // Segundo Zoom: Más profundo
-        world.style.transform = "translateZ(4000px) rotateX(10deg)";
-        document.getElementById('sec-stats').classList.remove('active');
+        world.style.transform = "translateZ(5000px)";
+        document.getElementById('sec-archive').classList.remove('active');
         document.getElementById('sec-magi').classList.add('active');
+        decryptVerdict();
+    }
+
+    function decryptVerdict() {
+        const target = document.getElementById('verdict-text');
+        const msg = "SISTEMA MAGI DETERMINA: MELCHIOR, BALTHASAR Y CASPER HAN VOTADO A FAVOR. EL SECTOR DE LA FELICIDAD NO EXPLORADA HA SIDO CONQUISTADO EXITOSAMENTE. ERES MI PERSONA FAVORITA, VENUS.";
+        let i = 0;
+        document.getElementById('magi-title').innerText = "VEREDICTO UNÁNIME";
+        
+        const interval = setInterval(() => {
+            target.innerText += msg[i];
+            i++;
+            if(i >= msg.length) {
+                clearInterval(interval);
+                showFinalWarning();
+            }
+        }, 40);
+    }
+
+    function showFinalWarning() {
+        setTimeout(() => {
+            document.getElementById('warning').style.display = 'block';
+            document.getElementById('final-warning').style.display = 'block';
+        }, 1000);
     }
 
     function startTimer() {
@@ -145,7 +201,7 @@
             const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((diff % (1000 * 60)) / 1000);
-            document.getElementById('timer').innerHTML = `${d}D ${h}:${m}:${s}`;
+            document.getElementById('timer').innerHTML = `TIEMPO EN SECTOR: ${d}D ${h}:${m}:${s}`;
         }, 1000);
     }
 </script>
