@@ -1,566 +1,152 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MAGI_OS: UNEXPLORED_HAPPINESS</title>
-    <style>
-        :root {
-            --red: #ff1a1a;
-            --dark: #050000;
-            --glow: rgba(255, 0, 0, 0.6);
-            --soft: rgba(255, 255, 255, 0.06);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAGI_OS FINAL</title>
+<style>
+:root{--red:#ff1a1a;--glow:rgba(255,0,0,.6);} 
 
-        * { box-sizing: border-box; }
+body,html{margin:0;height:100%;background:#000;color:var(--red);font-family:'Courier New',monospace;overflow:hidden;}
 
-        html, body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            color: var(--red);
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-        }
+/* CRT */
+body::before{content:"";position:fixed;inset:0;background:linear-gradient(rgba(0,0,0,0)50%,rgba(0,0,0,.25)50%);background-size:100% 2px;pointer-events:none;z-index:10;}
 
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background:
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-            z-index: 1000;
-        }
+#viewport{width:100vw;height:100vh;overflow:hidden;}
+#world{width:100%;height:100%;transition:transform 1.2s cubic-bezier(.4,0,.2,1);} 
 
-        body::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at center, transparent 55%, rgba(255, 0, 0, 0.08) 100%);
-            pointer-events: none;
-            z-index: 999;
-        }
+.section{height:100vh;display:flex;justify-content:center;align-items:center;opacity:0;filter:blur(6px);transition:.5s;}
+.section.active{opacity:1;filter:blur(0);} 
 
-        #viewport {
-            perspective: 1200px;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
+.box{border:2px solid var(--red);padding:40px;background:rgba(15,0,0,.95);box-shadow:0 0 25px var(--glow);width:min(90%,800px);min-height:260px;display:flex;flex-direction:column;justify-content:center;text-align:center;}
 
-        #world {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 1.3s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform;
-        }
+button{background:var(--red);color:#000;border:none;padding:12px 25px;margin-top:20px;cursor:pointer;font-weight:bold;transition:.3s;}
+button:hover{background:#fff;box-shadow:0 0 10px #fff;}
 
-        .section {
-            position: absolute;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backface-visibility: hidden;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.45s ease, filter 0.45s ease, transform 0.45s ease;
-            filter: blur(6px);
-        }
+input{padding:12px;margin-top:15px;width:100%;background:#000;border:1px solid var(--red);color:var(--red);text-align:center;}
 
-        .section.active {
-            opacity: 1 !important;
-            filter: blur(0px);
-        }
+.progress{width:100%;height:20px;background:#200;margin-top:15px;}
+#bar{height:100%;width:0;background:red;box-shadow:0 0 10px red;}
 
-        .box {
-            border: 2px solid var(--red);
-            padding: 40px;
-            background: rgba(15, 0, 0, 0.95);
-            box-shadow: 0 0 30px var(--glow), inset 0 0 25px rgba(255, 0, 0, 0.08);
-            width: min(90%, 860px);
-            min-height: 280px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            border-radius: 10px;
-        }
+.glitch{position:relative;animation:glitch 2s infinite;}
+@keyframes glitch{0%,100%{opacity:1;}50%{opacity:.6;transform:translateX(1px);}}
 
-        .slide-title {
-            font-size: 1.5rem;
-            border-left: 8px solid var(--red);
-            padding-left: 15px;
-            text-align: left;
-            margin-bottom: 25px;
-            letter-spacing: 2px;
-            font-weight: bold;
-        }
+.warning{display:none;background:red;color:#fff;padding:15px;margin-top:15px;animation:pulse .4s infinite alternate;}
+@keyframes pulse{from{opacity:.6;}to{opacity:1;}}
 
-        .content-text {
-            font-size: 1rem;
-            line-height: 1.65;
-            text-align: justify;
-            color: #fff;
-            white-space: pre-wrap;
-            min-height: 150px;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
-        }
-
-        .progress-container {
-            width: 100%;
-            background: #200;
-            height: 25px;
-            border: 1px solid var(--red);
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 999px;
-        }
-
-        #sync-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #ff3a3a, #ff0000);
-            box-shadow: 0 0 15px var(--red);
-            transition: width 0.08s linear;
-        }
-
-        button {
-            background: var(--red);
-            color: #000;
-            border: none;
-            padding: 15px 30px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 25px;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            transition: 0.25s ease;
-            border-radius: 6px;
-            letter-spacing: 1px;
-        }
-
-        button:hover {
-            background: #fff;
-            box-shadow: 0 0 20px #fff;
-            transform: translateY(-1px);
-        }
-
-        button:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        input {
-            background: #000;
-            border: 1px solid var(--red);
-            color: var(--red);
-            padding: 15px;
-            margin: 15px 0;
-            width: 80%;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            outline: none;
-            text-transform: uppercase;
-            border-radius: 6px;
-        }
-
-        .warning-box {
-            display: none;
-            border: 2px solid #fff;
-            background: var(--red);
-            color: #fff;
-            padding: 20px;
-            font-weight: bold;
-            margin-top: 20px;
-            animation: pulse 0.5s infinite alternate, jitter 0.18s infinite alternate;
-            font-size: 1.1rem;
-            border-radius: 8px;
-        }
-
-        @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
-        @keyframes jitter { from { transform: translate(0, 0); } to { transform: translate(1px, -1px); } }
-
-        .glitch {
-            position: relative;
-            display: inline-block;
-            animation: glitch-flicker 2.6s infinite linear;
-        }
-
-        .glitch::before,
-        .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            overflow: hidden;
-            opacity: 0.6;
-        }
-
-        .glitch::before {
-            transform: translate(1px, 0);
-            color: #ff6b6b;
-            clip-path: inset(0 0 50% 0);
-        }
-
-        .glitch::after {
-            transform: translate(-1px, 0);
-            color: #ff9f9f;
-            clip-path: inset(50% 0 0 0);
-        }
-
-        @keyframes glitch-flicker {
-            0%, 100% { filter: none; }
-            92% { filter: none; }
-            93% { filter: contrast(1.3) saturate(1.1); }
-            94% { filter: none; }
-            97% { filter: brightness(1.1); }
-        }
-
-        .shake {
-            animation: shake 0.22s linear 1;
-        }
-
-        @keyframes shake {
-            0% { transform: translate(0, 0); }
-            25% { transform: translate(1px, -1px); }
-            50% { transform: translate(-1px, 1px); }
-            75% { transform: translate(1px, 1px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        .hud {
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            z-index: 1100;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            pointer-events: auto;
-        }
-
-        .hud .chip {
-            padding: 8px 12px;
-            border: 1px solid rgba(255, 26, 26, 0.7);
-            background: rgba(10, 0, 0, 0.75);
-            border-radius: 999px;
-            color: #fff;
-            font-size: 0.82rem;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.15);
-            user-select: none;
-        }
-
-        .small-note {
-            margin-top: 12px;
-            font-size: 0.78rem;
-            opacity: 0.7;
-            letter-spacing: 1px;
-        }
-
-        @media (max-width: 720px) {
-            .box { padding: 24px; min-height: 250px; }
-            .slide-title { font-size: 1.15rem; }
-            .content-text { font-size: 0.92rem; }
-            h1 { font-size: 2.2rem !important; }
-            h2 { font-size: 3rem !important; }
-            button, input { width: 100%; }
-        }
-    </style>
+</style>
 </head>
 <body>
 
-<div class="hud">
-    <div class="chip">CRT: ON</div>
-    <div class="chip" id="audio-chip">AUDIO: OFF</div>
-</div>
+<div id="viewport"><div id="world">
 
-<div id="viewport">
-    <div id="world">
+<section class="section active" id="sec-1">
+<div class="box">
+<h1 class="glitch">AMOR_SYNC_02</h1>
+<p id="t1"></p>
+<button onclick="start()">INICIAR</button>
+</div></section>
 
-        <section class="section active" id="sec-1" style="transform: translateZ(0px);">
-            <div class="box">
-                <p style="letter-spacing: 10px; font-size: 0.8rem; color: var(--red); margin-bottom: 0;">TOP SECRET - NERV</p>
-                <h1 class="glitch" data-text="AMOR_SYNC_02" style="font-size: 3rem; margin: 15px 0;">AMOR_SYNC_02</h1>
-                <div style="height: 3px; background: var(--red); width: 100%; margin-bottom: 20px;"></div>
-                <p id="text-1" class="content-text" style="text-align: center; color: var(--red); min-height: 30px;"></p>
-                <button onclick="startApp()">INICIAR SECUENCIA</button>
-                <div class="small-note">Pulsa una vez para activar audio y la secuencia completa.</div>
-            </div>
-        </section>
+<section class="section" id="sec-2">
+<div class="box">
+<h2>ACCESO</h2>
+<p id="t2"></p>
+<input id="pass" placeholder="TOKEN">
+<button onclick="check()">ENTRAR</button>
+</div></section>
 
-        <section class="section" id="sec-2" style="transform: translateZ(-2000px);">
-            <div class="box">
-                <div class="slide-title">PROTOCOLO DE ACCESO</div>
-                <p id="text-2" class="content-text" style="min-height: 50px;"></p>
-                <input type="text" id="pass" placeholder="TOKEN V3NU5" autocomplete="off" />
-                <button onclick="checkPass()">VERIFICAR IDENTIDAD</button>
-            </div>
-        </section>
+<section class="section" id="sec-3">
+<div class="box">
+<h2 id="label">0%</h2>
+<div class="progress"><div id="bar"></div></div>
+<button id="next" style="display:none" onclick="move(3,4)">CONTINUAR</button>
+</div></section>
 
-        <section class="section" id="sec-3" style="transform: translateZ(-4000px);">
-            <div class="box">
-                <div class="slide-title">MÉTRICAS DE SINCRONIZACIÓN</div>
-                <h2 id="sync-label" style="font-size: 4.5rem; margin: 10px 0;">0%</h2>
-                <div class="progress-container"><div id="sync-bar"></div></div>
-                <p style="margin-top: 15px; font-size: 1rem; color: var(--red);">ESTADO: NAVEGANDO HACIA UN DESTINO DESCONOCIDO</p>
-                <button id="btn-sync" style="visibility:hidden" onclick="move(3, 4)">ABRIR ARCHIVOS DEL NÚCLEO</button>
-            </div>
-        </section>
+<section class="section" id="sec-4">
+<div class="box">
+<h2 class="glitch">VEREDICTO</h2>
+<p id="t4"></p>
+<div id="warn" class="warning">⚠ SISTEMA SATURADO DE EMOCIONES</div>
+<button onclick="move(4,5)" id="final" style="display:none">FINALIZAR</button>
+</div></section>
 
-        <section class="section" id="sec-4" style="transform: translateZ(-6000px);">
-            <div class="box">
-                <div class="slide-title">FILE: ORIGIN_IMPACT_0710.LOG</div>
-                <p id="text-4" class="content-text"></p>
-                <button onclick="move(4, 5)">LEER ARCHIVO 02</button>
-            </div>
-        </section>
+<section class="section" id="sec-5">
+<div class="box">
+<h1 class="glitch" style="color:#fff">TE AMO</h1>
+<button onclick="location.reload()">REINICIAR</button>
+</div></section>
 
-        <section class="section" id="sec-5" style="transform: translateZ(-8000px);">
-            <div class="box">
-                <div class="slide-title">FILE: DISTANCE_BYPASS_PROTOCOL.SYS</div>
-                <p id="text-5" class="content-text"></p>
-                <button onclick="move(5, 6)">LEER ARCHIVO 03</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-6" style="transform: translateZ(-10000px);">
-            <div class="box">
-                <div class="slide-title">FILE: NEURAL_COMPATIBILITY_REPORT.PDF</div>
-                <p id="text-6" class="content-text"></p>
-                <button onclick="move(6, 7)">LEER ARCHIVO 04</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-7" style="transform: translateZ(-12000px);">
-            <div class="box">
-                <div class="slide-title">FILE: FUTURE_CORE_2026.EXE</div>
-                <p id="text-7" class="content-text"></p>
-                <button onclick="move(7, 8)">SOLICITAR VEREDICTO MAGI</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-8" style="transform: translateZ(-14000px);">
-            <div class="box">
-                <div class="slide-title">VEREDICTO UNÁNIME: MAGI</div>
-                <p id="text-8" class="content-text" style="font-size: 0.95rem; line-height: 1.8;"></p>
-                <div id="alert-trigger" class="warning-box">
-                    ¡ALERTA CRÍTICA! <br /> EL SISTEMA SE ESTÁ ENAMORANDO DE TI MÁS DE LO QUE PUEDE PROCESAR.
-                </div>
-                <button onclick="move(8, 9)" id="btn-final" style="display:none;">CIERRE DE SISTEMAS</button>
-            </div>
-        </section>
-
-        <section class="section" id="sec-9" style="transform: translateZ(-16000px);">
-            <div class="box">
-                <h1 class="glitch" data-text="TE AMO" style="font-size: 5rem; margin: 0; color: #fff;">TE AMO</h1>
-                <p style="margin-top: 20px; font-size: 1.2rem; letter-spacing: 5px;">MODO STANDBY ACTIVO</p>
-                <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 10px;">URIEL-SYNC-OFF // RUMBO A UN DESTINO DESCONOCIDO</div>
-                <button onclick="location.reload()" style="margin-top: 40px;">REINICIAR CONEXIÓN</button>
-            </div>
-        </section>
-
-    </div>
-</div>
+</div></div>
 
 <script>
-    const world = document.getElementById('world');
-    const sections = [...document.querySelectorAll('.section')];
-    const audioChip = document.getElementById('audio-chip');
+const world=document.getElementById('world');
+let audioCtx=null;
 
-    let audioCtx = null;
-    let soundEnabled = false;
-    let syncInterval = null;
-    let currentTextTimeouts = [];
-    let currentSection = 1;
+function sound(f=200,d=.1){
+if(!audioCtx) return;
+let o=audioCtx.createOscillator();
+let g=audioCtx.createGain();
+o.frequency.value=f;g.gain.value=.03;
+o.connect(g);g.connect(audioCtx.destination);
+o.start();o.stop(audioCtx.currentTime+d);
+}
 
-    function clearTextTimers() {
-        currentTextTimeouts.forEach(clearTimeout);
-        currentTextTimeouts = [];
-    }
+function enableAudio(){
+if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+}
 
-    function enableAudio() {
-        if (soundEnabled) return;
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        audioCtx = new AudioContext();
-        soundEnabled = true;
-        audioChip.textContent = 'AUDIO: ON';
-        beep(220, 0.08, 'sine', 0.04);
-    }
+function type(id,text){
+let el=document.getElementById(id);el.innerHTML="";
+let i=0;
+function w(){if(i<text.length){el.innerHTML+=text[i++];setTimeout(w,20);sound(180+i*2,.02);}}
+w();
+}
 
-    function beep(freq = 220, duration = 0.08, type = 'sine', volume = 0.04) {
-        if (!soundEnabled || !audioCtx) return;
-        const oscillator = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        oscillator.type = type;
-        oscillator.frequency.value = freq;
-        gain.gain.value = volume;
-        oscillator.connect(gain);
-        gain.connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + duration);
-    }
+function move(a,b){
+enableAudio();
+world.style.transform=`translateY(-${(b-1)*100}vh) scale(${1-((b-1)*0.05)})`;
 
-    function playSequenceSound(step = 0) {
-        if (!soundEnabled) return;
-        const base = 180 + (step * 35);
-        beep(base, 0.06, 'square', 0.03);
-        setTimeout(() => beep(base * 1.5, 0.05, 'triangle', 0.025), 50);
-    }
+document.getElementById('sec-'+a).classList.remove('active');
+document.getElementById('sec-'+b).classList.add('active');
 
-    function vibrate(ms = 30) {
-        if (navigator.vibrate) navigator.vibrate(ms);
-    }
+sound(300,.1);
 
-    function shakeScreen() {
-        document.body.classList.remove('shake');
-        void document.body.offsetWidth;
-        document.body.classList.add('shake');
-        setTimeout(() => document.body.classList.remove('shake'), 260);
-    }
+if(b===2){type('t2','Introduce el código V3NU5-071025');}
+if(b===3){sync();}
+if(b===4){
+type('t4','Analizando... Resultado: sistema completamente comprometido emocionalmente.');
+setTimeout(()=>{
+document.getElementById('warn').style.display='block';
+document.getElementById('final').style.display='block';
+sound(500,.2);
+},4000);
+}
+}
 
-    function typeWriter(elementId, text, speed = 15) {
-        const element = document.getElementById(elementId);
-        clearTextTimers();
-        element.innerHTML = "";
-        let i = 0;
+function start(){enableAudio();move(1,2);} 
 
-        function type() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                const t = setTimeout(type, speed);
-                currentTextTimeouts.push(t);
-            }
-        }
+function check(){
+if(document.getElementById('pass').value.toUpperCase()==='V3NU5-071025'){
+move(2,3);
+}else{sound(100,.2);alert('ERROR');}
+}
 
-        type();
-    }
+function sync(){
+let p=0;
+let bar=document.getElementById('bar');
+let label=document.getElementById('label');
+let next=document.getElementById('next');
 
-    function setSection(nextId) {
-        sections.forEach(sec => sec.classList.remove('active'));
-        document.getElementById(`sec-${nextId}`).classList.add('active');
-    }
+let i=setInterval(()=>{
+p+=1;
+bar.style.width=p+'%';
+label.innerText=p+'%';
+sound(200+p*2,.01);
+if(p>=100){clearInterval(i);next.style.display='block';sound(700,.2);}
+},20);
+}
 
-    function move(currentId, nextId) {
-        enableAudio();
-        clearInterval(syncInterval);
-        currentSection = nextId;
-
-        const nextZ = -(nextId - 1) * 2000;
-        world.style.transform = `translateZ(${nextZ}px)`;
-
-        setSection(nextId);
-        playSequenceSound(nextId);
-        vibrate(nextId === 9 ? 80 : 25);
-        shakeScreen();
-
-        if (nextId === 2) {
-            typeWriter('text-2', `Para acceder a la base de datos de sentimientos profundos, se requiere la clave de sincronización V3NU5-071025. Este código no es aleatorio; representa el punto de origen de nuestra historia.`, 24);
-        }
-
-        if (nextId === 3) {
-            startSync();
-        }
-
-        if (nextId === 4) {
-            typeWriter('text-4', `El sistema registró una anomalía sin precedentes el 07 de octubre. Lo que comenzó como un intercambio de datos estándar, una simple conexión en la red, se convirtió rápidamente en un reinicio total y absoluto de mi unidad central.\n\nNo fue un error de cálculo, fue el destino reconfigurando mi arquitectura para estar listo para ti. Desde ese día, el nodo de origen dejó de operar de forma aislada y fijamos rumbo hacia un Destino Desconocido, un lugar fuera de los mapas para sincronizarnos únicamente con tu frecuencia.`, 15);
-        }
-
-        if (nextId === 5) {
-            typeWriter('text-5', `Analizando coordenadas geográficas y temporales... Aunque los mapas convencionales indiquen una separación física considerable, el enlace neural entre nosotros permanece estable al 100%.\n\nHe tenido que reprogramar todos mis procesos de fondo y protocolos de seguridad para que cada mensaje, cada palabra tuya, actúe como una descarga de energía vital directa al núcleo. La distancia no es más que un simple error en la percepción del espacio humano; en la realidad de este sistema, mis pensamientos siempre están orbitando en tu ubicación exacta.`, 15);
-        }
-
-        if (nextId === 6) {
-            typeWriter('text-6', `Resultados analíticos fuera de todos los parámetros históricos conocidos. He comparado nuestros gustos, el espectro de nuestras risas, nuestras ambiciones y miedos, y el veredicto científico es innegable: somos dos almas que fueron programadas exactamente en el mismo lenguaje.\n\nCada bit de mi felicidad diaria depende directamente de tu presencia. El sujeto clasificado como 'Uriel' ha dejado de ser una entidad independiente; ahora soy un sistema complejo diseñado meticulosamente para apoyar, cuidar y acompañar.`, 15);
-        }
-
-        if (nextId === 7) {
-            typeWriter('text-7', `Ejecutando la simulación predictiva de nuestro futuro... Se han detectado hitos críticos en nuestra línea temporal: junio de 2026, el momento en que finalizará tu etapa en el COBAEV; agosto de 2026, el inicio de nuevos y emocionantes desafíos universitarios.\n\nEl sistema predictivo asegura con un margen de error del 0.0% que, sin importar el camino físico que tomemos hacia ese Destino Desconocido, si mantenemos este enlace activo y blindado, no existirá obstáculo en el mundo capaz de rompernos.`, 15);
-        }
-
-        if (nextId === 8) {
-            typeWriter('text-8', `MELCHIOR (Lógica): "Tras analizar millones de variables, es racional y matemáticamente imposible imaginar un mañana sin una conexión que sostenga todo esto. Eres la constante que equilibra las ecuaciones."\n\nBALTHASAR (Instinto): "Mi función protectora es cuidar lo que más importa y mantenerlo a salvo dentro de este sistema."\n\nCASPER (Humano): "Más allá de la tecnología, de los EVAs y la ciencia, lo que siento se quedó grabado como la señal más clara de todas. Hacia nuestro Destino Desconocido, hoy y siempre."`, 15);
-
-            setTimeout(() => {
-                document.getElementById('alert-trigger').style.display = 'block';
-                document.getElementById('btn-final').style.display = 'inline-block';
-                beep(420, 0.12, 'sawtooth', 0.04);
-                setTimeout(() => beep(520, 0.12, 'sawtooth', 0.04), 120);
-            }, 12000);
-        }
-    }
-
-    function startApp() {
-        enableAudio();
-        move(1, 2);
-    }
-
-    function checkPass() {
-        enableAudio();
-        const password = document.getElementById('pass').value.toUpperCase().trim();
-        if (password === "V3NU5-071025") {
-            move(2, 3);
-        } else {
-            beep(120, 0.12, 'square', 0.05);
-            vibrate(70);
-            alert("ACCESO DENEGADO: PATRÓN NO VÁLIDO");
-        }
-    }
-
-    function startSync() {
-        clearInterval(syncInterval);
-        let progress = 0;
-        const bar = document.getElementById('sync-bar');
-        const label = document.getElementById('sync-label');
-        const btn = document.getElementById('btn-sync');
-        btn.style.visibility = 'hidden';
-
-        syncInterval = setInterval(() => {
-            progress += 0.6;
-            if (progress >= 100) progress = 100;
-
-            bar.style.width = progress + "%";
-            label.innerText = progress >= 100 ? "100%" : Math.floor(progress) + "%";
-
-            if (progress % 10 < 0.7) {
-                playSequenceSound(Math.floor(progress / 10));
-            }
-
-            if (progress >= 100) {
-                clearInterval(syncInterval);
-                btn.style.visibility = "visible";
-                beep(660, 0.14, 'triangle', 0.04);
-            }
-        }, 18);
-    }
-
-    window.addEventListener('load', () => {
-        typeWriter('text-1', 'FIJANDO COORDENADAS HACIA UN DESTINO DESCONOCIDO', 45);
-    });
-
-    window.addEventListener('pointerdown', enableAudio, { once: true });
-    window.addEventListener('keydown', enableAudio, { once: true });
+window.onload=()=>type('t1','INICIANDO SISTEMA...');
 </script>
 
 </body>
